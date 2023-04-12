@@ -1,0 +1,5 @@
+build.ts
+tsconfig.spec.json
+tsconfig.build.json
+project.json
+*.tgz
