@@ -1,7 +1,8 @@
-import axios, { AxiosInstance } from "axios";
+import axios from "axios";
+import { DateTime } from "luxon";
 import type { SpartanToken } from "../models/spartan-token";
 import type { SpartanTokenRequest } from "../models/spartan-token-request";
-import { DateTime } from "luxon";
+import { coalesceDateTime } from "../util/date-time";
 
 export interface Token {
   token: string;
@@ -13,7 +14,10 @@ export class HaloAuthenticationClient {
 
   constructor(
     private readonly fetchXstsToken: () => Promise<string>,
-    private readonly loadToken: () => Promise<Token | null>,
+    private readonly loadToken: () => Promise<{
+      token?: string;
+      expiresAt?: unknown;
+    } | null>,
     private readonly saveToken: (token: Token) => Promise<void>
   ) {}
 
@@ -56,11 +60,15 @@ export class HaloAuthenticationClient {
       });
 
       try {
-        const currentToken = await this.loadToken();
+        const loadedToken = await this.loadToken();
+        const currentToken = {
+          token: loadedToken?.token ?? "",
+          expiresAt: coalesceDateTime(loadedToken?.expiresAt),
+        };
 
-        if (currentToken && currentToken.expiresAt > DateTime.now()) {
+        if (currentToken.expiresAt && currentToken.expiresAt > DateTime.now()) {
           // Current token is valid, return it and alert other callers if applicable
-          promiseResolver(currentToken);
+          promiseResolver(currentToken as Token);
           return currentToken.token;
         } else {
           const xstsToken = await this.fetchXstsToken();

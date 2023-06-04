@@ -3,3 +3,8 @@ export { Playlist } from "./models/halo-infinite/playlist";
 export { PlaylistCsrContainer } from "./models/halo-infinite/playlist-csr-container";
 export { UserInfo } from "./models/halo-infinite/user-info";
 export { ServiceRecord } from "./models/halo-infinite/service-record";
+export { MatchType } from "./models/halo-infinite/match-type";
+export { GameVariantCategory } from "./models/halo-infinite/game-variant-category";
+export { MatchStats } from "./models/halo-infinite/match-stats";
+export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history";
+export { Stats } from "./models/halo-infinite/stats";

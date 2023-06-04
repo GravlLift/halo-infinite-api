@@ -8,8 +8,10 @@ The package is currently limited to the endpoints I've needed to use in other pr
 
 - GET https://profile.svc.halowaypoint.com/users/{gamerTag}
 - GET https://skill.svc.halowaypoint.com/hi/playlist/{playlistId}/csrs?players={playerIds}
-- GET https://halostats.svc.halowaypoint.com/hi/playlist/{playlistId}/csrs?players={playerIds}
 - GET https://gamecms-hacs.svc.halowaypoint.com/hi/multiplayer/file/playlists/assets/{playlistId}.json
+- GET https://halostats.svc.halowaypoint.com/hi/playlist/{playlistId}/csrs?players={playerIds}
+- GET https://halostats.svc.halowaypoint.com/hi/players/xuid({playerId})/matches
+- GET https://skill.svc.halowaypoint.com/hi/matches/{matchId}/skill
 
 ### Getting Started
 

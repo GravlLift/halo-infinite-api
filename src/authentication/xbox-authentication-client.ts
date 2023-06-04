@@ -2,8 +2,15 @@ import axios, { AxiosInstance } from "axios";
 import getPkce from "oauth-pkce";
 import { DateTime } from "luxon";
 import { XboxTicket } from "../models/xbox-ticket";
+import { coalesceDateTime } from "../util/date-time";
 
 const SCOPES = ["Xboxlive.signin", "Xboxlive.offline_access"];
+// polyfill crypto for oauth-pkce
+if (!globalThis.window) globalThis.window = {} as any;
+if (!globalThis.window.crypto) {
+  globalThis.window.crypto = (await import("node:crypto"))
+    .webcrypto as typeof globalThis.window.crypto;
+}
 
 export enum RelyingParty {
   Xbox = "http://xboxlive.com",
@@ -25,7 +32,11 @@ export class XboxAuthenticationClient {
     private readonly clientId: string,
     private readonly redirectUri: string,
     private readonly getAuthCode: (authorizeUrl: string) => Promise<string>,
-    private readonly loadToken: () => Promise<XboxAuthenticationToken | null>,
+    private readonly loadToken: () => Promise<{
+      token?: string;
+      expiresAt?: unknown;
+      refreshToken?: string;
+    } | null>,
     private readonly saveToken: (
       token: XboxAuthenticationToken
     ) => Promise<void>
@@ -92,11 +103,16 @@ export class XboxAuthenticationClient {
       );
 
       try {
-        const currentToken = await this.loadToken();
+        const loadedToken = await this.loadToken();
+        const currentToken = {
+          ...loadedToken,
+          token: loadedToken?.token ?? "",
+          expiresAt: coalesceDateTime(loadedToken?.expiresAt),
+        };
 
-        if (currentToken && currentToken.expiresAt > DateTime.now()) {
+        if (currentToken.expiresAt && currentToken.expiresAt > DateTime.now()) {
           // Current token is valid, return it and alert other callers if applicable
-          promiseResolver(currentToken);
+          promiseResolver(currentToken as XboxAuthenticationToken);
           return currentToken.token;
         } else {
           const newToken = await this.fetchOauth2Token();
