@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import getPkce from "oauth-pkce";
+import pkceChallenge from "pkce-challenge";
 import { DateTime } from "luxon";
 import { XboxTicket } from "../models/xbox-ticket";
 import { coalesceDateTime } from "../util/date-time";
@@ -45,18 +45,7 @@ export class XboxAuthenticationClient {
   }
 
   private getPkce() {
-    return new Promise<{
-      verifier: string;
-      challenge: string;
-    }>((resolve, reject) => {
-      getPkce(43, (err, { verifier, challenge }) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ verifier, challenge });
-        }
-      });
-    });
+    return pkceChallenge(43);
   }
 
   public async getAccessToken() {
@@ -128,7 +117,7 @@ export class XboxAuthenticationClient {
   }
 
   private async fetchOauth2Token(): Promise<XboxAuthenticationToken> {
-    const { verifier, challenge } = await this.getPkce();
+    const { code_verifier, code_challenge } = await this.getPkce();
 
     const authorizeUrl = `https://login.live.com/oauth20_authorize.srf?${new URLSearchParams(
       {
@@ -137,7 +126,7 @@ export class XboxAuthenticationClient {
         redirect_uri: this.redirectUri,
         scope: SCOPES.join(" "),
         code_challenge_method: "S256",
-        code_challenge: challenge,
+        code_challenge,
       }
     )}`;
 
@@ -159,7 +148,7 @@ export class XboxAuthenticationClient {
         scope: SCOPES.join(" "),
         redirect_uri: this.redirectUri,
         client_id: this.clientId,
-        code_verifier: verifier,
+        code_verifier,
       }),
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
