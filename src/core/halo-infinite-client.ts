@@ -13,9 +13,9 @@ import {
 import { HaloAuthenticationClient } from "../authentication/halo-authentication-client";
 import { Playlist } from "../models/halo-infinite/playlist";
 import { MatchType } from "../models/halo-infinite/match-type";
-import { MatchStats } from "src/models/halo-infinite/match-stats";
-import { PlayerMatchHistory } from "src/models/halo-infinite/player-match-history";
-import { MatchSkill } from "src/models/halo-infinite/match-skill";
+import { MatchStats } from "../models/halo-infinite/match-stats";
+import { PlayerMatchHistory } from "../models/halo-infinite/player-match-history";
+import { MatchSkill } from "../models/halo-infinite/match-skill";
 
 interface ResultContainer<TValue> {
   Id: string;
