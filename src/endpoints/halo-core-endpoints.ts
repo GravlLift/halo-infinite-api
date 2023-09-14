@@ -10,6 +10,8 @@ export const HaloCoreEndpoints = {
   StatsOrigin: "halostats",
   /** Game CMS origin */
   GameCmsOrigin: "gamecms-hacs",
+  /** Discovery origin */
+  DiscoveryOrigin: "discovery-infiniteugc",
 
   /** Service domain */
   ServiceDomain: "svc.halowaypoint.com:443",

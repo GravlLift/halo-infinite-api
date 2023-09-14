@@ -1,3 +1,4 @@
+import { AssetVersionLink } from "./asset-version-link";
 import { GameVariantCategory } from "./game-variant-category";
 import { PlaylistExperience } from "./playlist-experience";
 export interface MatchInfo<
@@ -9,28 +10,12 @@ export interface MatchInfo<
   LifecycleMode: number;
   GameVariantCategory: TCategory;
   LevelId: string;
-  MapVariant: {
-    AssetKind: number;
-    AssetId: string;
-    VersionId: string;
-  };
-  UgcGameVariant: {
-    AssetKind: number;
-    AssetId: string;
-    VersionId: string;
-  };
+  MapVariant: AssetVersionLink;
+  UgcGameVariant: AssetVersionLink;
   ClearanceId: string;
-  Playlist: {
-    AssetKind: number;
-    AssetId: string;
-    VersionId: string;
-  };
+  Playlist: AssetVersionLink;
   PlaylistExperience: PlaylistExperience;
-  PlaylistMapModePair: {
-    AssetKind: number;
-    AssetId: string;
-    VersionId: string;
-  };
+  PlaylistMapModePair: AssetVersionLink;
   SeasonId: string;
   PlayableDuration: string;
   TeamsEnabled: boolean;

@@ -1,21 +1,21 @@
-import axios, { AxiosHeaders } from "axios";
-import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
-import { Method } from "axios";
-import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-container";
-import { GlobalConstants } from "../util/global-contants";
-import { UserInfo } from "../models/halo-infinite/user-info";
-import { ServiceRecord } from "../models/halo-infinite/service-record";
+import axios, { AxiosHeaders, Method } from "axios";
+import { HaloAuthenticationClient } from "../authentication/halo-authentication-client";
 import {
   RelyingParty,
   XboxAuthenticationClient,
-  XboxAuthenticationToken,
 } from "../authentication/xbox-authentication-client";
-import { HaloAuthenticationClient } from "../authentication/halo-authentication-client";
-import { Playlist } from "../models/halo-infinite/playlist";
-import { MatchType } from "../models/halo-infinite/match-type";
-import { MatchStats } from "../models/halo-infinite/match-stats";
-import { PlayerMatchHistory } from "../models/halo-infinite/player-match-history";
+import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
 import { MatchSkill } from "../models/halo-infinite/match-skill";
+import { MatchStats } from "../models/halo-infinite/match-stats";
+import { MatchType } from "../models/halo-infinite/match-type";
+import { PlayerMatchHistory } from "../models/halo-infinite/player-match-history";
+import { Playlist } from "../models/halo-infinite/playlist";
+import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-container";
+import { ServiceRecord } from "../models/halo-infinite/service-record";
+import { UserInfo } from "../models/halo-infinite/user-info";
+import { GlobalConstants } from "../util/global-contants";
+import { MapAsset, UgcGameVariantAsset } from "../models/halo-infinite/asset";
+import { AssetKind } from "../models/halo-infinite/asset-kind";
 
 interface ResultContainer<TValue> {
   Id: string;
@@ -38,6 +38,18 @@ interface TokenPersister {
   load: <T>(tokenName: string) => Promise<T>;
   save: (tokenName: string, token: unknown) => Promise<void>;
 }
+
+type AssetKindTypeMap = {
+  [AssetKind.Map]: MapAsset;
+  [AssetKind.UgcGameVariant]: UgcGameVariantAsset;
+};
+
+const assetKindUrlMap = {
+  [AssetKind.Map]: "Maps",
+  [AssetKind.UgcGameVariant]: "UgcGameVariants",
+} satisfies {
+  [key in keyof AssetKindTypeMap]: string;
+};
 
 export class HaloInfiniteClient {
   private readonly haloAuthClient: HaloAuthenticationClient;
@@ -195,14 +207,19 @@ export class HaloInfiniteClient {
     type: MatchType = MatchType.All,
     count: number = 25,
     start: number = 0
-  ) =>
-    this.executePaginationRequest<PlayerMatchHistory>(
+  ) => {
+    let params: Record<string, string> = {};
+    if (type !== MatchType.All) {
+      params.type = type.toString();
+    }
+    return this.executePaginationRequest<PlayerMatchHistory>(
       count,
       start,
-      { type: type.toString() },
+      params,
       `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/players/xuid(${playerXuid})/matches`,
       "get"
     );
+  };
 
   public getMatchStats = (matchId: string) =>
     this.executeRequest<MatchStats>(
@@ -215,6 +232,27 @@ export class HaloInfiniteClient {
       `https://${HaloCoreEndpoints.SkillOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/matches/${matchId}/skill?players=xuid(${playerIds.join("),xuid(")})`,
+      "get"
+    );
+
+  /** Gets authoring metadata about a specific asset. */
+  public getAsset = <TAssetType extends keyof AssetKindTypeMap>(
+    assetType: TAssetType,
+    assetId: string
+  ) =>
+    this.executeRequest<AssetKindTypeMap[TAssetType]>(
+      `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/${assetKindUrlMap[assetType]}/${assetId}`,
+      "get"
+    );
+
+  /** Gets metadata related to a concrete version of a specified asset. */
+  public getSpecificAssetVersion = <TAssetType extends keyof AssetKindTypeMap>(
+    assetType: TAssetType,
+    assetId: string,
+    versionId: string
+  ) =>
+    this.executeRequest<AssetKindTypeMap[TAssetType]>(
+      `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/${assetKindUrlMap[assetType]}/${assetId}/versions/${versionId}`,
       "get"
     );
 }

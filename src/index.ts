@@ -8,3 +8,5 @@ export { GameVariantCategory } from "./models/halo-infinite/game-variant-categor
 export { MatchStats } from "./models/halo-infinite/match-stats";
 export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history";
 export { Stats } from "./models/halo-infinite/stats";
+export { MapAsset, UgcGameVariantAsset } from "./models/halo-infinite/asset";
+export { AssetKind } from "./models/halo-infinite/asset-kind";
