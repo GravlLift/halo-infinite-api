@@ -116,7 +116,8 @@ export class HaloInfiniteClient {
     method: Method,
     useSpartanToken = true,
     useClearance = false,
-    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT
+    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT,
+    throwOn404: boolean = true
   ) {
     const headers = new AxiosHeaders({
       "User-Agent": userAgent,
@@ -138,15 +139,28 @@ export class HaloInfiniteClient {
       url,
       method,
       headers,
+      validateStatus: (status) =>
+        status < 400 || (status === 404 && !throwOn404),
     });
 
     return response.data;
   }
 
   private async executeResultsRequest<T>(
-    ...args: Parameters<HaloInfiniteClient["executeRequest"]>
+    url: string,
+    method: Method,
+    useSpartanToken = true,
+    useClearance = false,
+    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT
   ) {
-    const result = await this.executeRequest<ResultsContainer<T>>(...args);
+    const result = await this.executeRequest<ResultsContainer<T>>(
+      url,
+      method,
+      useSpartanToken,
+      useClearance,
+      userAgent,
+      false
+    );
 
     return result.Value;
   }
