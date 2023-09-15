@@ -51,6 +51,15 @@ const assetKindUrlMap = {
   [key in keyof AssetKindTypeMap]: string;
 };
 
+function wrapPlayerId(playerId: string) {
+  if (/^\w+(\d+)/) {
+    return playerId;
+  } else {
+    // Assume xuid
+    return `xuid(${playerId})`;
+  }
+}
+
 export class HaloInfiniteClient {
   private readonly haloAuthClient: HaloAuthenticationClient;
 
@@ -169,9 +178,9 @@ export class HaloInfiniteClient {
     this.executeResultsRequest<PlaylistCsrContainer>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${
         HaloCoreEndpoints.ServiceDomain
-      }/hi/playlist/${playlistId}/csrs?players=xuid(${playerIds.join(
-        "),xuid("
-      )})`,
+      }/hi/playlist/${playlistId}/csrs?players=${playerIds
+        .map(wrapPlayerId)
+        .join(",")}`,
       "get"
     );
 
@@ -216,7 +225,9 @@ export class HaloInfiniteClient {
       count,
       start,
       params,
-      `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/players/xuid(${playerXuid})/matches`,
+      `https://${HaloCoreEndpoints.StatsOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/players/xuid(${wrapPlayerId(playerXuid)})/matches`,
       "get"
     );
   };
@@ -231,7 +242,9 @@ export class HaloInfiniteClient {
     this.executeResultsRequest<MatchSkill>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${
         HaloCoreEndpoints.ServiceDomain
-      }/hi/matches/${matchId}/skill?players=xuid(${playerIds.join("),xuid(")})`,
+      }/hi/matches/${matchId}/skill?players=${playerIds
+        .map(wrapPlayerId)
+        .join(",")}`,
       "get"
     );
 
