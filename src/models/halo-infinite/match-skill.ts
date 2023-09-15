@@ -35,7 +35,7 @@ export interface MatchSkill {
     Deaths: StatPerformance;
   };
   Counterfactuals: {
-    SelfCounterfactual: Counterfactual;
+    SelfCounterfactuals: Counterfactual;
     TierCounterfactuals: {
       Bronze: Counterfactual;
       Silver: Counterfactual;
