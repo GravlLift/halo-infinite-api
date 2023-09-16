@@ -10,3 +10,4 @@ export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history"
 export { Stats } from "./models/halo-infinite/stats";
 export { MapAsset, UgcGameVariantAsset } from "./models/halo-infinite/asset";
 export { AssetKind } from "./models/halo-infinite/asset-kind";
+export { MatchOutcome } from "./models/halo-infinite/match-outcome";

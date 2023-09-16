@@ -57,3 +57,32 @@ export interface UgcGameVariantAsset extends Asset {
   };
   EngineGameVariantLink?: Asset;
 }
+
+export interface PlaylistAsset extends Asset {
+  CustomData: {
+    PlaylistEntries: Array<{
+      MapModePairAssetId: string;
+      Metadata: {
+        Weight: number;
+      };
+    }>;
+    Strategy: number;
+    MinTeams: number;
+    MinTeamSize: number;
+    MaxTeams: number;
+    MaxTeamSize: number;
+    MaxTeamImbalance: number;
+    MaxSplitscreenPlayersAllowed: number;
+    AllowFriendJoinInProgress: boolean;
+    AllowMatchmakingJoinInProgress: boolean;
+    AllowBotJoinInProgress: boolean;
+    ExitExperienceDurationSec: number;
+    FireteamLeaderKickAllowed: boolean;
+    DisableMidgameChat: boolean;
+    AllowedDeviceInputs: Array<number>;
+    BotDifficulty: number;
+    MinFireteamSize: number;
+    MaxFireteamSize: number;
+  };
+  RotationEntries: Asset[]; // TODO: Some sort of map-mode pair asset
+}

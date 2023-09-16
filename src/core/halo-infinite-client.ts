@@ -1,4 +1,4 @@
-import axios, { AxiosHeaders, Method } from "axios";
+import axios, { AxiosError, AxiosHeaders, Method } from "axios";
 import { HaloAuthenticationClient } from "../authentication/halo-authentication-client";
 import {
   RelyingParty,
@@ -14,12 +14,16 @@ import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-conta
 import { ServiceRecord } from "../models/halo-infinite/service-record";
 import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
-import { MapAsset, UgcGameVariantAsset } from "../models/halo-infinite/asset";
+import {
+  MapAsset,
+  PlaylistAsset,
+  UgcGameVariantAsset,
+} from "../models/halo-infinite/asset";
 import { AssetKind } from "../models/halo-infinite/asset-kind";
 
 interface ResultContainer<TValue> {
   Id: string;
-  ResultCode: number;
+  ResultCode: 0 | 1;
   Result: TValue;
 }
 
@@ -42,11 +46,13 @@ interface TokenPersister {
 type AssetKindTypeMap = {
   [AssetKind.Map]: MapAsset;
   [AssetKind.UgcGameVariant]: UgcGameVariantAsset;
+  [AssetKind.Playlist]: PlaylistAsset;
 };
 
 const assetKindUrlMap = {
   [AssetKind.Map]: "Maps",
   [AssetKind.UgcGameVariant]: "UgcGameVariants",
+  [AssetKind.Playlist]: "Playlists",
 } satisfies {
   [key in keyof AssetKindTypeMap]: string;
 };
@@ -116,8 +122,7 @@ export class HaloInfiniteClient {
     method: Method,
     useSpartanToken = true,
     useClearance = false,
-    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT,
-    throwOn404: boolean = true
+    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT
   ) {
     const headers = new AxiosHeaders({
       "User-Agent": userAgent,
@@ -139,28 +144,15 @@ export class HaloInfiniteClient {
       url,
       method,
       headers,
-      validateStatus: (status) =>
-        status < 400 || (status === 404 && !throwOn404),
     });
 
     return response.data;
   }
 
   private async executeResultsRequest<T>(
-    url: string,
-    method: Method,
-    useSpartanToken = true,
-    useClearance = false,
-    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT
+    ...args: Parameters<HaloInfiniteClient["executeRequest"]>
   ) {
-    const result = await this.executeRequest<ResultsContainer<T>>(
-      url,
-      method,
-      useSpartanToken,
-      useClearance,
-      userAgent,
-      false
-    );
+    const result = await this.executeRequest<ResultsContainer<T>>(...args);
 
     return result.Value;
   }
@@ -252,15 +244,24 @@ export class HaloInfiniteClient {
       "get"
     );
 
-  public getMatchSkill = (matchId: string, playerIds: string[]) =>
-    this.executeResultsRequest<MatchSkill>(
-      `https://${HaloCoreEndpoints.SkillOrigin}.${
-        HaloCoreEndpoints.ServiceDomain
-      }/hi/matches/${matchId}/skill?players=${playerIds
-        .map(wrapPlayerId)
-        .join(",")}`,
-      "get"
-    );
+  public getMatchSkill = async (matchId: string, playerIds: string[]) => {
+    try {
+      return await this.executeResultsRequest<MatchSkill>(
+        `https://${HaloCoreEndpoints.SkillOrigin}.${
+          HaloCoreEndpoints.ServiceDomain
+        }/hi/matches/${matchId}/skill?players=${playerIds
+          .map(wrapPlayerId)
+          .join(",")}`,
+        "get"
+      );
+    } catch (e) {
+      if (e instanceof AxiosError && e.status === 404 && e.response?.data) {
+        return (e.response.data as ResultsContainer<MatchSkill<0 | 1>>).Value;
+      } else {
+        throw e;
+      }
+    }
+  };
 
   /** Gets authoring metadata about a specific asset. */
   public getAsset = <TAssetType extends keyof AssetKindTypeMap>(

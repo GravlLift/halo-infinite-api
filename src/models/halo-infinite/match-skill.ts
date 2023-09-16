@@ -20,7 +20,7 @@ interface Counterfactual {
   Deaths: number;
 }
 
-export interface MatchSkill {
+export interface MatchSkill<TResult extends 1 | 0 = 0> {
   TeamId: number;
   TeamMmr: number;
   TeamMmrs: {
@@ -30,19 +30,23 @@ export interface MatchSkill {
     PreMatchCsr: CsrObject;
     PostMatchCsr: CsrObject;
   };
-  StatPerformances: {
-    Kills: StatPerformance;
-    Deaths: StatPerformance;
-  };
-  Counterfactuals: {
-    SelfCounterfactuals: Counterfactual;
-    TierCounterfactuals: {
-      Bronze: Counterfactual;
-      Silver: Counterfactual;
-      Gold: Counterfactual;
-      Platinum: Counterfactual;
-      Diamond: Counterfactual;
-      Onyx: Counterfactual;
-    };
-  };
+  StatPerformances: TResult extends 0
+    ? {
+        Kills: StatPerformance;
+        Deaths: StatPerformance;
+      }
+    : {};
+  Counterfactuals: TResult extends 0
+    ? {
+        SelfCounterfactuals: Counterfactual;
+        TierCounterfactuals: {
+          Bronze: Counterfactual;
+          Silver: Counterfactual;
+          Gold: Counterfactual;
+          Platinum: Counterfactual;
+          Diamond: Counterfactual;
+          Onyx: Counterfactual;
+        };
+      }
+    : null;
 }
