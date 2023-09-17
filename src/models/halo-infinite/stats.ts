@@ -38,48 +38,49 @@ type StatsMap = {
   [GameVariantCategory.MultiplayerKingOfTheHill]: { ZonesStats: ZonesStats };
 };
 
-export type Stats<TCategory extends GameVariantCategory> = {
-  CoreStats: {
-    Score: number;
-    PersonalScore: number;
-    RoundsWon: number;
-    RoundsLost: number;
-    RoundsTied: number;
-    Kills: number;
-    Deaths: number;
-    Assists: number;
-    KDA: number;
-    Suicides: number;
-    Betrayals: number;
-    AverageLifeDuration: string;
-    GrenadeKills: number;
-    HeadshotKills: number;
-    MeleeKills: number;
-    PowerWeaponKills: number;
-    ShotsFired: number;
-    ShotsHit: number;
-    Accuracy: number;
-    DamageDealt: number;
-    DamageTaken: number;
-    CalloutAssists: number;
-    VehicleDestroys: number;
-    DriverAssists: number;
-    Hijacks: number;
-    EmpAssists: number;
-    MaxKillingSpree: number;
-    Medals: {
-      NameId: number;
-      Count: number;
-      TotalPersonalScoreAwarded: number;
-    }[];
-    PersonalScores: {
-      NameId: number;
-      Count: number;
-      TotalPersonalScoreAwarded: number;
-    }[];
-    DeprecatedDamageDealt: number;
-    DeprecatedDamageTaken: number;
-    Spawns: number;
-    ObjectivesCompleted: number;
-  };
-} & (TCategory extends keyof StatsMap ? StatsMap[TCategory] : {});
+export type Stats<TCategory extends GameVariantCategory = GameVariantCategory> =
+  {
+    CoreStats: {
+      Score: number;
+      PersonalScore: number;
+      RoundsWon: number;
+      RoundsLost: number;
+      RoundsTied: number;
+      Kills: number;
+      Deaths: number;
+      Assists: number;
+      KDA: number;
+      Suicides: number;
+      Betrayals: number;
+      AverageLifeDuration: string;
+      GrenadeKills: number;
+      HeadshotKills: number;
+      MeleeKills: number;
+      PowerWeaponKills: number;
+      ShotsFired: number;
+      ShotsHit: number;
+      Accuracy: number;
+      DamageDealt: number;
+      DamageTaken: number;
+      CalloutAssists: number;
+      VehicleDestroys: number;
+      DriverAssists: number;
+      Hijacks: number;
+      EmpAssists: number;
+      MaxKillingSpree: number;
+      Medals: {
+        NameId: number;
+        Count: number;
+        TotalPersonalScoreAwarded: number;
+      }[];
+      PersonalScores: {
+        NameId: number;
+        Count: number;
+        TotalPersonalScoreAwarded: number;
+      }[];
+      DeprecatedDamageDealt: number;
+      DeprecatedDamageTaken: number;
+      Spawns: number;
+      ObjectivesCompleted: number;
+    };
+  } & (TCategory extends keyof StatsMap ? StatsMap[TCategory] : {});

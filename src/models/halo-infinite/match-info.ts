@@ -11,12 +11,12 @@ export interface MatchInfo<
   LifecycleMode: number;
   GameVariantCategory: TCategory;
   LevelId: string;
-  MapVariant: AssetVersionLink;
-  UgcGameVariant: AssetVersionLink;
+  MapVariant: TResult extends 0 ? AssetVersionLink : null;
+  UgcGameVariant: TResult extends 0 ? AssetVersionLink : null;
   ClearanceId: string;
-  Playlist: AssetVersionLink | null;
-  PlaylistExperience: TResult extends 0 ? PlaylistExperience : null;
-  PlaylistMapModePair: TResult extends 0 ? AssetVersionLink : null;
+  Playlist: TResult extends 0 ? AssetVersionLink | null : null;
+  PlaylistExperience: TResult extends 0 ? PlaylistExperience | null : null;
+  PlaylistMapModePair: TResult extends 0 ? AssetVersionLink | null : null;
   SeasonId: TResult extends 0 ? string : null;
   PlayableDuration: string;
   TeamsEnabled: boolean;

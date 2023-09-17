@@ -43,7 +43,7 @@ interface TokenPersister {
   save: (tokenName: string, token: unknown) => Promise<void>;
 }
 
-type AssetKindTypeMap = {
+export type AssetKindTypeMap = {
   [AssetKind.Map]: MapAsset;
   [AssetKind.UgcGameVariant]: UgcGameVariantAsset;
   [AssetKind.Playlist]: PlaylistAsset;
@@ -255,7 +255,11 @@ export class HaloInfiniteClient {
         "get"
       );
     } catch (e) {
-      if (e instanceof AxiosError && e.status === 404 && e.response?.data) {
+      if (
+        e instanceof AxiosError &&
+        e.response?.status === 404 &&
+        e.response.data
+      ) {
         return (e.response.data as ResultsContainer<MatchSkill<0 | 1>>).Value;
       } else {
         throw e;
