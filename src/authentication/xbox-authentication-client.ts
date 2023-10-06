@@ -126,6 +126,7 @@ export class XboxAuthenticationClient {
 
     const code = await this.getAuthCode(authorizeUrl);
 
+    const requestStart = DateTime.now();
     const response = await this.httpClient.post<{
       access_token: string;
       expires_in: number;
@@ -149,10 +150,9 @@ export class XboxAuthenticationClient {
       }
     );
 
-    const responseDate = DateTime.fromRFC2822(response.headers["date"]);
     return {
       token: response.data.access_token,
-      expiresAt: responseDate.plus({ seconds: response.data.expires_in }),
+      expiresAt: requestStart.plus({ seconds: response.data.expires_in }),
       refreshToken: response.data.refresh_token,
     };
   }

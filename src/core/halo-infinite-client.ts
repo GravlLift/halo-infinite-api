@@ -39,8 +39,8 @@ interface PaginationContainer<TValue> {
 }
 
 interface TokenPersister {
-  load: <T>(tokenName: string) => Promise<T>;
-  save: (tokenName: string, token: unknown) => Promise<void>;
+  load: <T>(tokenName: string) => Promise<T> | T;
+  save: (tokenName: string, token: unknown) => Promise<void> | void;
 }
 
 export type AssetKindTypeMap = {
