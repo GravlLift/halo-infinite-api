@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import type { SpartanToken } from "../models/spartan-token";
 import type { SpartanTokenRequest } from "../models/spartan-token-request";
 import { coalesceDateTime } from "../util/date-time";
+import { ExpiryTokenCache } from "../util/expiry-token-cache";
 
 export interface Token {
   token: string;
@@ -10,81 +11,21 @@ export interface Token {
 }
 
 export class HaloAuthenticationClient {
-  private currentTokenPromise: Promise<Token> | undefined = undefined;
+  private spartanTokenCache = new ExpiryTokenCache(async () => {
+    const persistedToken = await this.loadToken();
 
-  constructor(
-    private readonly fetchXstsToken: () => Promise<string>,
-    private readonly loadToken: () => Promise<{
-      token?: string;
-      expiresAt?: unknown;
-    } | null>,
-    private readonly saveToken: (token: Token) => Promise<void>
-  ) {}
-
-  public async getSpartanToken() {
-    if (this.currentTokenPromise) {
-      // Someone either already has a token or is in the process of getting one
-      // Wait for them to finish, then check for validity
-      const currentToken = await this.currentTokenPromise;
-
-      if (currentToken.expiresAt > DateTime.now()) {
-        // Current token is valid, return it
-        return currentToken.token;
-      } else {
-        // Current token expired, start a new promise
-        let promiseResolver!: (token: Token) => void;
-        let promiseRejector!: (error: unknown) => void;
-        this.currentTokenPromise = new Promise<Token>((resolve, reject) => {
-          promiseResolver = resolve;
-          promiseRejector = reject;
-        });
-
-        try {
-          const xstsToken = await this.fetchXstsToken();
-          const newToken = await this.fetchSpartanToken(xstsToken);
-          promiseResolver(newToken);
-          await this.saveToken(newToken);
-          return newToken.token;
-        } catch (e) {
-          promiseRejector(e);
-          throw e;
-        }
-      }
-    } else {
-      // We are the first caller, create a promise to block subsequent callers
-      let promiseResolver!: (token: Token) => void;
-      let promiseRejector!: (error: unknown) => void;
-      this.currentTokenPromise = new Promise<Token>((resolve, reject) => {
-        promiseResolver = resolve;
-        promiseRejector = reject;
-      });
-
-      try {
-        const loadedToken = await this.loadToken();
-        const currentToken = {
-          token: loadedToken?.token ?? "",
-          expiresAt: coalesceDateTime(loadedToken?.expiresAt),
-        };
-
-        if (currentToken.expiresAt && currentToken.expiresAt > DateTime.now()) {
-          // Current token is valid, return it and alert other callers if applicable
-          promiseResolver(currentToken as Token);
-          return currentToken.token;
-        } else {
-          const xstsToken = await this.fetchXstsToken();
-          const newToken = await this.fetchSpartanToken(xstsToken);
-          promiseResolver(newToken);
-          await this.saveToken(newToken);
-          return newToken.token;
-        }
-      } catch (e) {
-        promiseRejector(e);
-        throw e;
+    if (persistedToken?.expiresAt) {
+      const currentToken = {
+        token: persistedToken.token,
+        expiresAt: coalesceDateTime(persistedToken.expiresAt) as DateTime,
+      };
+      if (currentToken.expiresAt && currentToken.expiresAt > DateTime.now()) {
+        return currentToken;
       }
     }
-  }
 
-  private async fetchSpartanToken(xstsToken: string) {
+    const xstsToken = await this.fetchXstsToken();
+
     const tokenRequest: SpartanTokenRequest = {
       Audience: "urn:343:s3:services",
       MinVersion: "4",
@@ -106,9 +47,26 @@ export class HaloAuthenticationClient {
         },
       }
     );
-    return {
+
+    const newToken = {
       token: response.data.SpartanToken,
       expiresAt: DateTime.fromISO(response.data.ExpiresUtc.ISO8601Date),
     };
+    await this.saveToken(newToken);
+    return newToken;
+  });
+
+  constructor(
+    private readonly fetchXstsToken: () => Promise<string> | string,
+    private readonly loadToken: () => Promise<{
+      token: string;
+      expiresAt: unknown;
+    } | null>,
+    private readonly saveToken: (token: Token) => Promise<void>
+  ) {}
+
+  public async getSpartanToken() {
+    const { token } = await this.spartanTokenCache.getToken();
+    return token;
   }
 }

@@ -1,10 +1,11 @@
 import axios, { AxiosError, AxiosHeaders, Method } from "axios";
-import { HaloAuthenticationClient } from "../authentication/halo-authentication-client";
-import {
-  RelyingParty,
-  XboxAuthenticationClient,
-} from "../authentication/xbox-authentication-client";
 import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
+import {
+  MapAsset,
+  PlaylistAsset,
+  UgcGameVariantAsset,
+} from "../models/halo-infinite/asset";
+import { AssetKind } from "../models/halo-infinite/asset-kind";
 import { MatchSkill } from "../models/halo-infinite/match-skill";
 import { MatchStats } from "../models/halo-infinite/match-stats";
 import { MatchType } from "../models/halo-infinite/match-type";
@@ -14,12 +15,7 @@ import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-conta
 import { ServiceRecord } from "../models/halo-infinite/service-record";
 import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
-import {
-  MapAsset,
-  PlaylistAsset,
-  UgcGameVariantAsset,
-} from "../models/halo-infinite/asset";
-import { AssetKind } from "../models/halo-infinite/asset-kind";
+import { SpartanTokenProvider } from "./spartan-token-providers";
 
 interface ResultContainer<TValue> {
   Id: string;
@@ -36,11 +32,6 @@ interface PaginationContainer<TValue> {
   Count: number;
   ResultCount: number;
   Results: TValue[];
-}
-
-interface TokenPersister {
-  load: <T>(tokenName: string) => Promise<T> | T;
-  save: (tokenName: string, token: unknown) => Promise<void> | void;
 }
 
 export type AssetKindTypeMap = {
@@ -67,55 +58,7 @@ function wrapPlayerId(playerId: string) {
 }
 
 export class HaloInfiniteClient {
-  private readonly haloAuthClient: HaloAuthenticationClient;
-
-  constructor(
-    clientId: string,
-    redirectUri: string,
-    getAuthCode: (authorizeUrl: string) => Promise<string>,
-    tokenPersister?: TokenPersister
-  ) {
-    const xboxAuthClient = new XboxAuthenticationClient(
-      clientId,
-      redirectUri,
-      getAuthCode,
-      async () => {
-        if (tokenPersister) {
-          return await tokenPersister.load("xbox.authToken");
-        } else {
-          return null;
-        }
-      },
-      async (token) => {
-        if (tokenPersister) {
-          await tokenPersister.save("xbox.authToken", token);
-        }
-      }
-    );
-    this.haloAuthClient = new HaloAuthenticationClient(
-      async () => {
-        const accessToken = await xboxAuthClient.getAccessToken();
-        const userToken = await xboxAuthClient.getUserToken(accessToken);
-        const xstsTicket = await xboxAuthClient.getXstsTicket(
-          userToken,
-          RelyingParty.Halo
-        );
-        return xstsTicket.Token;
-      },
-      async () => {
-        if (tokenPersister) {
-          return await tokenPersister.load("halo.authToken");
-        } else {
-          return null;
-        }
-      },
-      async (token) => {
-        if (tokenPersister) {
-          await tokenPersister.save("halo.authToken", token);
-        }
-      }
-    );
-  }
+  constructor(private spartanTokenProvider: SpartanTokenProvider) {}
 
   private async executeRequest<T>(
     url: string,
@@ -132,7 +75,7 @@ export class HaloInfiniteClient {
     if (useSpartanToken) {
       headers.set(
         "x-343-authorization-spartan",
-        await this.haloAuthClient.getSpartanToken()
+        await this.spartanTokenProvider.getSpartanToken()
       );
     }
 

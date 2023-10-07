@@ -3,6 +3,9 @@ import pkceChallenge from "pkce-challenge";
 import { DateTime } from "luxon";
 import { XboxTicket } from "../models/xbox-ticket";
 import { coalesceDateTime } from "../util/date-time";
+import { ResolvablePromise } from "../util/resolvable-promise";
+import { ExpiryTokenCache } from "../util/expiry-token-cache";
+import { TokenPersister } from "../core/token-persisters";
 
 const SCOPES = ["Xboxlive.signin", "Xboxlive.offline_access"];
 
@@ -18,22 +21,90 @@ export interface XboxAuthenticationToken {
 }
 
 export class XboxAuthenticationClient {
-  private currentTokenPromise: Promise<XboxAuthenticationToken> | undefined =
-    undefined;
+  private accessTokenPromise:
+    | ResolvablePromise<XboxAuthenticationToken>
+    | undefined = undefined;
+  private userTokenCache = new ExpiryTokenCache(async (accessToken: string) => {
+    const persistedToken = await this.tokenPersister?.load<
+      XboxTicket & { expiresAt: DateTime }
+    >("xbox.userToken");
+
+    if (persistedToken && persistedToken.expiresAt > DateTime.now()) {
+      return persistedToken;
+    }
+
+    const response = await this.httpClient.post<XboxTicket>(
+      "https://user.auth.xboxlive.com/user/authenticate",
+      {
+        RelyingParty: "http://auth.xboxlive.com",
+        TokenType: "JWT",
+        Properties: {
+          AuthMethod: "RPS",
+          SiteName: "user.auth.xboxlive.com",
+          RpsTicket: `d=${accessToken}`,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "x-xbl-contract-version": "1",
+        },
+      }
+    );
+
+    const result = {
+      ...response.data,
+      expiresAt: DateTime.fromISO(response.data.NotAfter),
+    };
+    await this.tokenPersister?.save("xbox.userToken", result);
+    return result;
+  });
+  private xstsTicketCache = new ExpiryTokenCache(
+    async (userToken: string, relyingParty: RelyingParty) => {
+      const persistedToken = await this.tokenPersister?.load<
+        XboxTicket & { expiresAt: DateTime }
+      >("xbox.xstsTicket");
+
+      if (persistedToken && persistedToken.expiresAt > DateTime.now()) {
+        return persistedToken;
+      }
+
+      const response = await this.httpClient.post<XboxTicket>(
+        "https://xsts.auth.xboxlive.com/xsts/authorize",
+        {
+          RelyingParty: relyingParty,
+          TokenType: "JWT",
+          Properties: {
+            SandboxId: "RETAIL",
+            UserTokens: [userToken],
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "x-xbl-contract-version": "1",
+          },
+        }
+      );
+
+      const result = {
+        ...response.data,
+        expiresAt: DateTime.fromISO(response.data.NotAfter),
+      };
+      await this.tokenPersister?.save("xbox.xstsTicket", result);
+      return result;
+    }
+  );
+
   private readonly httpClient: AxiosInstance;
 
   constructor(
     private readonly clientId: string,
     private readonly redirectUri: string,
     private readonly getAuthCode: (authorizeUrl: string) => Promise<string>,
-    private readonly loadToken: () => Promise<{
-      token?: string;
-      expiresAt?: unknown;
-      refreshToken?: string;
-    } | null>,
-    private readonly saveToken: (
-      token: XboxAuthenticationToken
-    ) => Promise<void>
+    private readonly tokenPersister?: TokenPersister
   ) {
     this.httpClient = axios.create();
   }
@@ -43,50 +114,41 @@ export class XboxAuthenticationClient {
   }
 
   public async getAccessToken() {
-    if (this.currentTokenPromise) {
+    if (this.accessTokenPromise) {
       // Someone either already has a token or is in the process of getting one
       // Wait for them to finish, then check for validity
-      const currentToken = await this.currentTokenPromise;
+      const currentToken = await this.accessTokenPromise;
 
       if (currentToken.expiresAt > DateTime.now()) {
         // Current token is valid, return it
         return currentToken.token;
       } else {
         // Current token expired, start a new promise
-        let promiseResolver!: (token: XboxAuthenticationToken) => void;
-        let promiseRejector!: (error: unknown) => void;
-        this.currentTokenPromise = new Promise<XboxAuthenticationToken>(
-          (resolve, reject) => {
-            promiseResolver = resolve;
-            promiseRejector = reject;
-          }
-        );
+        this.accessTokenPromise =
+          new ResolvablePromise<XboxAuthenticationToken>();
 
         try {
           const newToken = await this.refreshOAuth2Token(
             currentToken.refreshToken
           );
-          promiseResolver(newToken);
-          await this.saveToken(newToken);
+          this.accessTokenPromise.resolve(newToken);
+          await this.tokenPersister?.save("xbox.accessToken", newToken);
           return newToken.token;
         } catch (e) {
-          promiseRejector(e);
+          this.accessTokenPromise.reject(e);
           throw e;
         }
       }
     } else {
       // We are the first caller, create a promise to block subsequent callers
-      let promiseResolver!: (token: XboxAuthenticationToken) => void;
-      let promiseRejector!: (error: unknown) => void;
-      this.currentTokenPromise = new Promise<XboxAuthenticationToken>(
-        (resolve, reject) => {
-          promiseResolver = resolve;
-          promiseRejector = reject;
-        }
-      );
+      this.accessTokenPromise =
+        new ResolvablePromise<XboxAuthenticationToken>();
 
       try {
-        const loadedToken = await this.loadToken();
+        const loadedToken =
+          await this.tokenPersister?.load<XboxAuthenticationToken>(
+            "xbox.accessToken"
+          );
         const currentToken = {
           ...loadedToken,
           token: loadedToken?.token ?? "",
@@ -95,23 +157,25 @@ export class XboxAuthenticationClient {
 
         if (currentToken.expiresAt && currentToken.expiresAt > DateTime.now()) {
           // Current token is valid, return it and alert other callers if applicable
-          promiseResolver(currentToken as XboxAuthenticationToken);
+          this.accessTokenPromise.resolve(
+            currentToken as XboxAuthenticationToken
+          );
           return currentToken.token;
         } else {
           const newToken = await this.fetchOauth2Token();
-          promiseResolver(newToken);
-          await this.saveToken(newToken);
+          this.accessTokenPromise.resolve(newToken);
+          await this.tokenPersister?.save("xbox.accessToken", newToken);
           return newToken.token;
         }
       } catch (e) {
-        promiseRejector(e);
+        this.accessTokenPromise.reject(e);
         throw e;
       }
     }
   }
 
   private async fetchOauth2Token(): Promise<XboxAuthenticationToken> {
-    const { code_verifier, code_challenge } = await this.getPkce();
+    const { code_verifier, code_challenge } = this.getPkce();
 
     const authorizeUrl = `https://login.live.com/oauth20_authorize.srf?${new URLSearchParams(
       {
@@ -190,50 +254,12 @@ export class XboxAuthenticationClient {
   }
 
   public async getUserToken(accessToken: string) {
-    const response = await this.httpClient.post<XboxTicket>(
-      "https://user.auth.xboxlive.com/user/authenticate",
-      {
-        RelyingParty: "http://auth.xboxlive.com",
-        TokenType: "JWT",
-        Properties: {
-          AuthMethod: "RPS",
-          SiteName: "user.auth.xboxlive.com",
-          RpsTicket: `d=${accessToken}`,
-        },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "x-xbl-contract-version": "1",
-        },
-      }
-    );
-
-    return response.data.Token;
+    const { Token } = await this.userTokenCache.getToken(accessToken);
+    return Token;
   }
 
-  public async getXstsTicket(userToken: string, relyingParty: RelyingParty) {
-    const response = await this.httpClient.post<XboxTicket>(
-      "https://xsts.auth.xboxlive.com/xsts/authorize",
-      {
-        RelyingParty: relyingParty,
-        TokenType: "JWT",
-        Properties: {
-          SandboxId: "RETAIL",
-          UserTokens: [userToken],
-        },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "x-xbl-contract-version": "1",
-        },
-      }
-    );
-
-    return response.data;
+  public getXstsTicket(userToken: string, relyingParty: RelyingParty) {
+    return this.xstsTicketCache.getToken(userToken, relyingParty);
   }
 
   public getXboxLiveV3Token = (userHash: string, userToken: string) =>

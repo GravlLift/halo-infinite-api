@@ -21,7 +21,7 @@ The core requirement to use the endpoints in the library is to have a Spartan to
 >
 > The Spartan token is associated with _your identity_ and _your account_. **Do not share it** with anyone, under any circumstances. The API wrapper does not explicitly store it anywhere. It's your responsibility to make sure that it's secure and not available to anyone else.
 
-If you want to automatically generate the Spartan token, you can do so with the help of Grunt API without having to worry about doing any of the REST API calls yourself. Before you get started, make sure that you [register an Azure Active Directory application](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app). You will need it in order to log in with your Microsoft account, that will be used to generate the token. Because this is just for you, you can use `https://localhost` as the redirect URI when you create the application, unless you're thinking of productizing whatever you're building.
+If you want to automatically generate the Spartan token, you can do so with the help of this package without having to worry about doing any of the REST API calls yourself. Before you get started, make sure that you [register an Azure Active Directory application](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app). You will need it in order to log in with your Microsoft account, that will be used to generate the token. Because this is just for you, you can use `https://localhost` as the redirect URI when you create the application, unless you're thinking of productizing whatever you're building.
 
 Once you have the application registered, you can use the following code to automatically generate the token and call endpoints:
 
