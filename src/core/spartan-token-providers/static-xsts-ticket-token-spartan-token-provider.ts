@@ -1,6 +1,7 @@
 import { TokenPersister } from "../token-persisters";
 import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
 import { SpartanTokenProvider } from ".";
+import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 
 /**
  * A SpartanTokenProvider that fetches uses a pre-fetched XSTS ticket token.
@@ -8,26 +9,24 @@ import { SpartanTokenProvider } from ".";
  * HaloAuthenticationClient can be instantitated with a pre-fetched XSTS ticket
  * and run on a server (such as one provided by the user).
  */
-
 export class StaticXstsTicketTokenSpartanTokenProvider
   implements SpartanTokenProvider
 {
   public readonly getSpartanToken: () => Promise<string>;
 
   constructor(xstsTicketToken: string, tokenPersister?: TokenPersister) {
+    let actualTokenPersister: TokenPersister;
+    if (tokenPersister) {
+      actualTokenPersister = tokenPersister;
+    } else {
+      actualTokenPersister = inMemoryTokenPersister;
+    }
+
     const haloAuthClient = new HaloAuthenticationClient(
       () => xstsTicketToken,
-      async () => {
-        if (tokenPersister) {
-          return await tokenPersister.load("halo.authToken");
-        } else {
-          return null;
-        }
-      },
+      async () => await actualTokenPersister.load("halo.authToken"),
       async (token) => {
-        if (tokenPersister) {
-          await tokenPersister.save("halo.authToken", token);
-        }
+        await actualTokenPersister.save("halo.authToken", token);
       }
     );
 

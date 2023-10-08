@@ -26,11 +26,14 @@ export class XboxAuthenticationClient {
     | undefined = undefined;
   private userTokenCache = new ExpiryTokenCache(async (accessToken: string) => {
     const persistedToken = await this.tokenPersister?.load<
-      XboxTicket & { expiresAt: DateTime }
+      XboxTicket & { expiresAt?: unknown }
     >("xbox.userToken");
 
-    if (persistedToken && persistedToken.expiresAt > DateTime.now()) {
-      return persistedToken;
+    if (persistedToken?.expiresAt) {
+      const expiresAt = coalesceDateTime(persistedToken.expiresAt);
+      if (expiresAt && expiresAt > DateTime.now()) {
+        return { ...persistedToken, expiresAt };
+      }
     }
 
     const response = await this.httpClient.post<XboxTicket>(
@@ -66,8 +69,11 @@ export class XboxAuthenticationClient {
         XboxTicket & { expiresAt: DateTime }
       >("xbox.xstsTicket");
 
-      if (persistedToken && persistedToken.expiresAt > DateTime.now()) {
-        return persistedToken;
+      if (persistedToken?.expiresAt) {
+        const expiresAt = coalesceDateTime(persistedToken.expiresAt);
+        if (expiresAt && expiresAt > DateTime.now()) {
+          return { ...persistedToken, expiresAt };
+        }
       }
 
       const response = await this.httpClient.post<XboxTicket>(
@@ -110,7 +116,13 @@ export class XboxAuthenticationClient {
   }
 
   private getPkce() {
-    return pkceChallenge(43);
+    // Some sort of module issue here, we work around it
+    type PkceChallenge = typeof pkceChallenge;
+    if (typeof pkceChallenge === "function") {
+      return pkceChallenge(43);
+    } else {
+      return (pkceChallenge as { default: PkceChallenge }).default(43);
+    }
   }
 
   public async getAccessToken() {
@@ -224,6 +236,7 @@ export class XboxAuthenticationClient {
   private async refreshOAuth2Token(
     refreshToken: string
   ): Promise<XboxAuthenticationToken> {
+    const requestStart = DateTime.now();
     const response = await this.httpClient.post<{
       access_token: string;
       expires_in: number;
@@ -244,11 +257,9 @@ export class XboxAuthenticationClient {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       }
     );
-
-    const responseDate = DateTime.fromRFC2822(response.headers["date"]);
     return {
       token: response.data.access_token,
-      expiresAt: responseDate.plus({ seconds: response.data.expires_in }),
+      expiresAt: requestStart.plus({ seconds: response.data.expires_in }),
       refreshToken: response.data.refresh_token,
     };
   }

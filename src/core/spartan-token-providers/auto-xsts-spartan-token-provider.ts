@@ -5,6 +5,7 @@ import {
 import { TokenPersister } from "../token-persisters";
 import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
 import { SpartanTokenProvider } from ".";
+import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 
 /**
  * A SpartanTokenProvider that fetches both the Xbox and Halo tokens in the same
@@ -20,6 +21,12 @@ export class AutoXstsSpartanTokenProvider implements SpartanTokenProvider {
     getAuthCode: (authorizeUrl: string) => Promise<string>,
     tokenPersister?: TokenPersister
   ) {
+    let actualTokenPersister: TokenPersister;
+    if (tokenPersister) {
+      actualTokenPersister = tokenPersister;
+    } else {
+      actualTokenPersister = inMemoryTokenPersister;
+    }
     const xboxAuthClient = new XboxAuthenticationClient(
       clientId,
       redirectUri,
@@ -36,17 +43,9 @@ export class AutoXstsSpartanTokenProvider implements SpartanTokenProvider {
         );
         return xstsTicket.Token;
       },
-      async () => {
-        if (tokenPersister) {
-          return await tokenPersister.load("halo.authToken");
-        } else {
-          return null;
-        }
-      },
+      async () => await actualTokenPersister.load("halo.authToken"),
       async (token) => {
-        if (tokenPersister) {
-          await tokenPersister.save("halo.authToken", token);
-        }
+        await actualTokenPersister.save("halo.authToken", token);
       }
     );
 

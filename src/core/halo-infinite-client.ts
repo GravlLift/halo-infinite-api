@@ -57,6 +57,15 @@ function wrapPlayerId(playerId: string) {
   }
 }
 
+function unwrapPlayerId(playerId: string) {
+  const match = /^\w+\((\d+)\)$/.exec(playerId);
+  if (match) {
+    return match[1];
+  } else {
+    return playerId;
+  }
+}
+
 export class HaloInfiniteClient {
   constructor(private spartanTokenProvider: SpartanTokenProvider) {}
 
@@ -141,6 +150,18 @@ export class HaloInfiniteClient {
       `https://${HaloCoreEndpoints.Profile}.${HaloCoreEndpoints.ServiceDomain}/users/gt(${gamerTag})`,
       "get"
     );
+
+  /** Get gamertag info for several players.
+   * @param xuids - Xuids to lookup.
+   */
+  public getUsers = (xuids: string[]) => {
+    return this.executeRequest<UserInfo[]>(
+      `https://${HaloCoreEndpoints.Profile}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/users?xuids=${xuids.map((x) => unwrapPlayerId(x)).join(",")}`,
+      "get"
+    );
+  };
 
   /** Get service record for a player.
    * @param gamerTag - Gamertag to lookup.
