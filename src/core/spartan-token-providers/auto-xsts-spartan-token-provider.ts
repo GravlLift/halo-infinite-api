@@ -16,9 +16,7 @@ export class AutoXstsSpartanTokenProvider implements SpartanTokenProvider {
   public readonly getSpartanToken: () => Promise<string>;
 
   constructor(
-    clientId: string,
-    redirectUri: string,
-    getAuthCode: (authorizeUrl: string) => Promise<string>,
+    getOauth2AccessToken: () => Promise<string>,
     tokenPersister?: TokenPersister
   ) {
     let actualTokenPersister: TokenPersister;
@@ -27,16 +25,12 @@ export class AutoXstsSpartanTokenProvider implements SpartanTokenProvider {
     } else {
       actualTokenPersister = inMemoryTokenPersister;
     }
-    const xboxAuthClient = new XboxAuthenticationClient(
-      clientId,
-      redirectUri,
-      getAuthCode,
-      tokenPersister
-    );
+    const xboxAuthClient = new XboxAuthenticationClient(tokenPersister);
     const haloAuthClient = new HaloAuthenticationClient(
       async () => {
-        const accessToken = await xboxAuthClient.getAccessToken();
-        const userToken = await xboxAuthClient.getUserToken(accessToken);
+        const userToken = await xboxAuthClient.getUserToken(
+          await getOauth2AccessToken()
+        );
         const xstsTicket = await xboxAuthClient.getXstsTicket(
           userToken,
           RelyingParty.Halo

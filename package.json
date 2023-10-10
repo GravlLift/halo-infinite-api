@@ -1,7 +1,7 @@
 {
   "name": "halo-infinite-api",
   "type": "module",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "An NPM package for accessing the official Halo Infinite API.",
   "main": "dist/index.js",
   "scripts": {
@@ -33,6 +33,7 @@
     "yargs": "^17.7.1"
   },
   "dependencies": {
+    "@azure/msal-node": "^2.2.0",
     "axios": "^1.3.5",
     "expiry-map": "^2.0.0",
     "luxon": "^3.3.0",
