@@ -31,6 +31,7 @@ export class ExpiryTokenCache<
           return newToken;
         } catch (e) {
           this.tokenFetchPromise.reject(e);
+          this.tokenFetchPromise = undefined;
           throw e;
         }
       }
@@ -44,6 +45,7 @@ export class ExpiryTokenCache<
         return newToken;
       } catch (e) {
         this.tokenFetchPromise.reject(e);
+        this.tokenFetchPromise = undefined;
         throw e;
       }
     }
