@@ -29,6 +29,15 @@ interface CaptureTheFlagStats {
   KillsAsFlagReturner: number;
   TimeAsFlagCarrier: string;
 }
+
+interface ExtractionStats {
+  SuccessfulExtractions: number;
+  ExtractionConversionsDenied: number;
+  ExtractionConversionsCompleted: number;
+  ExtractionInitiationsDenied: number;
+  ExtractionInitiationsCompleted: number;
+}
+
 type StatsMap = {
   [GameVariantCategory.MultiplayerOddball]: { OddballStats: OddballStats };
   [GameVariantCategory.MultiplayerStrongholds]: { ZonesStats: ZonesStats };
@@ -36,6 +45,9 @@ type StatsMap = {
     CaptureTheFlagStats: CaptureTheFlagStats;
   };
   [GameVariantCategory.MultiplayerKingOfTheHill]: { ZonesStats: ZonesStats };
+  [GameVariantCategory.MultiplayerExtraction]: {
+    ExtractionStats: ExtractionStats;
+  };
 };
 
 export type Stats<TCategory extends GameVariantCategory = GameVariantCategory> =
