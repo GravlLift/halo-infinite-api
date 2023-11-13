@@ -28,12 +28,8 @@ export class AutoXstsSpartanTokenProvider implements SpartanTokenProvider {
     const xboxAuthClient = new XboxAuthenticationClient(tokenPersister);
     const haloAuthClient = new HaloAuthenticationClient(
       async () => {
-        const userToken = await xboxAuthClient.getUserToken(
-          await getOauth2AccessToken()
-        );
         const xstsTicket = await xboxAuthClient.getXstsTicket(
-          userToken,
-          RelyingParty.Halo
+          getOauth2AccessToken
         );
         return xstsTicket.Token;
       },

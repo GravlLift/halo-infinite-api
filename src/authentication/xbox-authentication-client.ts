@@ -103,13 +103,23 @@ export class XboxAuthenticationClient {
     this.httpClient = axios.create();
   }
 
-  public async getUserToken(accessToken: string) {
-    const { Token } = await this.userTokenCache.getToken(accessToken);
-    return Token;
-  }
-
-  public getXstsTicket(userToken: string, relyingParty: RelyingParty) {
-    return this.xstsTicketCache.getToken(userToken, relyingParty);
+  public async getXstsTicket(getOauth2AccessToken: () => Promise<string>) {
+    let xstsTicket = await this.xstsTicketCache.getTokenWithoutFetch();
+    if (!xstsTicket) {
+      let userToken = await this.userTokenCache.getTokenWithoutFetch();
+      if (!userToken) {
+        // Ouath2 token depends on nothing, so we can fetch it without
+        // worrying if it is expired.
+        userToken = await this.userTokenCache.getToken(
+          await getOauth2AccessToken()
+        );
+      }
+      xstsTicket = await this.xstsTicketCache.getToken(
+        userToken.Token,
+        RelyingParty.Halo
+      );
+    }
+    return xstsTicket;
   }
 
   public getXboxLiveV3Token = (userHash: string, userToken: string) =>

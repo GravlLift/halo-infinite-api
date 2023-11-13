@@ -50,4 +50,18 @@ export class ExpiryTokenCache<
       }
     }
   }
+
+  async getTokenWithoutFetch(): Promise<TToken | undefined> {
+    if (this.tokenFetchPromise) {
+      // Someone either already has a token or is in the process of getting one
+      // Wait for them to finish, then check for validity
+      const currentToken = await this.tokenFetchPromise;
+
+      if (currentToken.expiresAt > DateTime.now()) {
+        // Current token is valid, return it
+        return currentToken;
+      }
+    }
+    return undefined;
+  }
 }
