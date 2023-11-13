@@ -11,50 +11,41 @@ export interface Token {
 }
 
 export class HaloAuthenticationClient {
-  private spartanTokenCache = new ExpiryTokenCache(async () => {
-    const persistedToken = await this.loadToken();
+  private spartanTokenCache = new ExpiryTokenCache(
+    async () => {
+      const xstsToken = await this.fetchXstsToken();
 
-    if (persistedToken?.expiresAt) {
-      const currentToken = {
-        token: persistedToken.token,
-        expiresAt: coalesceDateTime(persistedToken.expiresAt) as DateTime,
+      const tokenRequest: SpartanTokenRequest = {
+        Audience: "urn:343:s3:services",
+        MinVersion: "4",
+        Proof: [
+          {
+            Token: xstsToken,
+            TokenType: "Xbox_XSTSv3",
+          },
+        ],
       };
-      if (currentToken.expiresAt && currentToken.expiresAt > DateTime.now()) {
-        return currentToken;
-      }
-    }
-
-    const xstsToken = await this.fetchXstsToken();
-
-    const tokenRequest: SpartanTokenRequest = {
-      Audience: "urn:343:s3:services",
-      MinVersion: "4",
-      Proof: [
+      const response = await axios.post<SpartanToken>(
+        "https://settings.svc.halowaypoint.com/spartan-token",
+        tokenRequest,
         {
-          Token: xstsToken,
-          TokenType: "Xbox_XSTSv3",
-        },
-      ],
-    };
-    const response = await axios.post<SpartanToken>(
-      "https://settings.svc.halowaypoint.com/spartan-token",
-      tokenRequest,
-      {
-        headers: {
-          "User-Agent":
-            "HaloWaypoint/2021112313511900 CFNetwork/1327.0.4 Darwin/21.2.0",
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      }
-    );
+          headers: {
+            "User-Agent":
+              "HaloWaypoint/2021112313511900 CFNetwork/1327.0.4 Darwin/21.2.0",
+            "Content-Type": "application/json; charset=utf-8",
+          },
+        }
+      );
 
-    const newToken = {
-      token: response.data.SpartanToken,
-      expiresAt: DateTime.fromISO(response.data.ExpiresUtc.ISO8601Date),
-    };
-    await this.saveToken(newToken);
-    return newToken;
-  });
+      const newToken = {
+        token: response.data.SpartanToken,
+        expiresAt: DateTime.fromISO(response.data.ExpiresUtc.ISO8601Date),
+      };
+      await this.saveToken(newToken);
+      return newToken;
+    },
+    () => this.loadToken()
+  );
 
   constructor(
     private readonly fetchXstsToken: () => Promise<string> | string,
