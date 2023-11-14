@@ -10,7 +10,7 @@ export class ExpiryTokenCache<
 
   constructor(
     private readonly generateNewToken: (...args: TArgs) => Promise<TToken>,
-    public readonly getExistingToken: () => Promise<
+    private readonly existingTokenFetcher: () => Promise<
       (Omit<TToken, "expiresAt"> & { expiresAt: unknown }) | null
     >
   ) {}
@@ -64,5 +64,18 @@ export class ExpiryTokenCache<
         throw e;
       }
     }
+  }
+
+  async getExistingToken() {
+    const existingToken = await this.existingTokenFetcher();
+
+    if (existingToken?.expiresAt) {
+      const expiresAt = coalesceDateTime(existingToken.expiresAt);
+      if (expiresAt && expiresAt > DateTime.now()) {
+        return { ...existingToken, expiresAt } as TToken;
+      }
+    }
+
+    return null;
   }
 }
