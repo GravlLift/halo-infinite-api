@@ -16,8 +16,8 @@ interface StatPerformance {
 }
 
 interface Counterfactual {
-  Kills: number;
-  Deaths: number;
+  Kills: number | "NaN";
+  Deaths: number | "NaN";
 }
 
 export interface MatchSkill<TResult extends 1 | 0 = 0> {
