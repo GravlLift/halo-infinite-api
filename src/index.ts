@@ -25,3 +25,4 @@ export { SpartanTokenProvider } from "./core/spartan-token-providers";
 export { AutoXstsSpartanTokenProvider } from "./core/spartan-token-providers/auto-xsts-spartan-token-provider";
 export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
 export { TokenPersister } from "./core/token-persisters";
+export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";
