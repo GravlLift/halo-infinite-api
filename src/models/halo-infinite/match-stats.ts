@@ -1,5 +1,6 @@
 import { GameVariantCategory } from "./game-variant-category";
 import { MatchInfo } from "./match-info";
+import { MatchOutcome } from "./match-outcome";
 import { Stats } from "./stats";
 
 export interface MatchStats<
@@ -15,7 +16,10 @@ export interface MatchStats<
   }[];
   Players: {
     PlayerId: string;
+    PlayerType: number;
+    BotAttributes: object;
     LastTeamId: number;
+    Outcome: MatchOutcome;
     Rank: number;
     ParticipationInfo: {
       FirstJoinedTime: string;
