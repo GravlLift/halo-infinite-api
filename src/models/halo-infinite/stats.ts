@@ -48,6 +48,9 @@ type StatsMap = {
   [GameVariantCategory.MultiplayerExtraction]: {
     ExtractionStats: ExtractionStats;
   };
+  [GameVariantCategory.MultiplayerFirefight]: {
+    ExtractionStats: ExtractionStats;
+  };
 };
 
 export type Stats<TCategory extends GameVariantCategory = GameVariantCategory> =

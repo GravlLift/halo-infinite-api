@@ -11,4 +11,5 @@ export enum GameVariantCategory {
   MultiplayerGrifball = 25,
   MultiplayerLandGrab = 39,
   MultiplayerExtraction = 17,
+  MultiplayerFirefight = 42,
 }
