@@ -1,22 +1,27 @@
-import axios, { AxiosHeaders, Method } from "axios";
 import { XboxTokenProvider } from "./token-providers/xbox-token-provider";
 
 export class XboxClient {
-  constructor(private xboxTokenProvider: XboxTokenProvider) {}
+  private readonly fetchFn: typeof fetch;
+  constructor(
+    private xboxTokenProvider: XboxTokenProvider,
+    fetchFn?: typeof fetch
+  ) {
+    this.fetchFn = fetchFn ?? fetch;
+  }
 
-  private async executeRequest<T>(url: string, method: Method) {
-    const headers = new AxiosHeaders({
-      Accept: "application/json",
-      Authorization: await this.xboxTokenProvider.getXboxLiveV3Token(),
-      "x-xbl-contract-version": "1",
-    });
-    const response = await axios.request<T>({
-      url,
+  private async executeRequest<T>(url: string, method: RequestInit["method"]) {
+    const response = await this.fetchFn(url, {
       method,
-      headers,
+      headers: {
+        Accept: "application/json",
+        Authorization: await this.xboxTokenProvider.getXboxLiveV3Token(),
+        "x-xbl-contract-version": "1",
+      },
     });
 
-    return response.data;
+    const result = (await response.json()) as T;
+
+    return result;
   }
 
   public async searchUsers(query: string) {

@@ -1,4 +1,3 @@
-import axios, { AxiosInstance } from "axios";
 import { DateTime } from "luxon";
 import { TokenPersister } from "../core/token-persisters";
 import { XboxTicket } from "../models/xbox-ticket";
@@ -19,32 +18,35 @@ export interface XboxAuthenticationToken {
 export class XboxAuthenticationClient {
   private userTokenCache = new ExpiryTokenCache(
     async (accessToken: string) => {
-      const response = await this.httpClient.post<XboxTicket>(
+      const response = await this.fetchFn(
         "https://user.auth.xboxlive.com/user/authenticate",
         {
-          RelyingParty: "http://auth.xboxlive.com",
-          TokenType: "JWT",
-          Properties: {
-            AuthMethod: "RPS",
-            SiteName: "user.auth.xboxlive.com",
-            RpsTicket: `d=${accessToken}`,
-          },
-        },
-        {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
             "x-xbl-contract-version": "1",
           },
+          body: JSON.stringify({
+            RelyingParty: "http://auth.xboxlive.com",
+            TokenType: "JWT",
+            Properties: {
+              AuthMethod: "RPS",
+              SiteName: "user.auth.xboxlive.com",
+              RpsTicket: `d=${accessToken}`,
+            },
+          }),
         }
       );
 
-      const result = {
-        ...response.data,
-        expiresAt: DateTime.fromISO(response.data.NotAfter),
+      const result = (await response.json()) as XboxTicket;
+
+      const token = {
+        ...result,
+        expiresAt: DateTime.fromISO(result.NotAfter),
       };
-      await this.tokenPersister?.save("xbox.userToken", result);
-      return result;
+      await this.tokenPersister?.save("xbox.userToken", token);
+      return token;
     },
     async () =>
       (await this.tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
@@ -53,34 +55,33 @@ export class XboxAuthenticationClient {
   );
   private xstsTicketCache = new KeyedExpiryTokenCache(
     async (relyingParty: RelyingParty, userToken: string) => {
-      const response = await this.httpClient.post<XboxTicket>(
+      const response = await this.fetchFn(
         "https://xsts.auth.xboxlive.com/xsts/authorize",
         {
-          RelyingParty: relyingParty,
-          TokenType: "JWT",
-          Properties: {
-            SandboxId: "RETAIL",
-            UserTokens: [userToken],
-          },
-        },
-        {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
             "x-xbl-contract-version": "1",
           },
+          body: JSON.stringify({
+            RelyingParty: relyingParty,
+            TokenType: "JWT",
+            Properties: {
+              SandboxId: "RETAIL",
+              UserTokens: [userToken],
+            },
+          }),
         }
       );
+      const result = (await response.json()) as XboxTicket;
 
-      const result = {
-        ...response.data,
-        expiresAt: DateTime.fromISO(response.data.NotAfter),
+      const token = {
+        ...result,
+        expiresAt: DateTime.fromISO(result.NotAfter),
       };
-      await this.tokenPersister?.save(
-        "xbox.xstsTicket." + relyingParty,
-        result
-      );
-      return result;
+      await this.tokenPersister?.save("xbox.xstsTicket." + relyingParty, token);
+      return token;
     },
     async (relyingParty) =>
       (await this.tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
@@ -88,11 +89,10 @@ export class XboxAuthenticationClient {
       )) ?? null
   );
 
-  private readonly httpClient: AxiosInstance;
-
-  constructor(private readonly tokenPersister?: TokenPersister) {
-    this.httpClient = axios.create();
-  }
+  constructor(
+    private readonly tokenPersister?: TokenPersister,
+    private readonly fetchFn: typeof fetch = fetch
+  ) {}
 
   public async getXstsTicket(
     getOauth2AccessToken: () => Promise<string>,

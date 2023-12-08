@@ -1,4 +1,3 @@
-import axios, { AxiosError, AxiosHeaders, Method } from "axios";
 import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
 import {
   MapAsset,
@@ -67,38 +66,43 @@ function unwrapPlayerId(playerId: string) {
 }
 
 export class HaloInfiniteClient {
-  constructor(private spartanTokenProvider: SpartanTokenProvider) {}
+  private readonly fetchFn: typeof fetch;
+  constructor(
+    private spartanTokenProvider: SpartanTokenProvider,
+    fetchFn?: typeof fetch
+  ) {
+    this.fetchFn = fetchFn ?? fetch;
+  }
 
   private async executeRequest<T>(
     url: string,
-    method: Method,
+    method: RequestInit["method"],
     useSpartanToken = true,
     useClearance = false,
     userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT
   ) {
-    const headers = new AxiosHeaders({
+    const headers: HeadersInit = {
       "User-Agent": userAgent,
       Accept: "application/json",
-    });
+    };
 
     if (useSpartanToken) {
-      headers.set(
-        "x-343-authorization-spartan",
-        await this.spartanTokenProvider.getSpartanToken()
-      );
+      headers["x-343-authorization-spartan"] =
+        await this.spartanTokenProvider.getSpartanToken();
     }
 
     if (useClearance) {
       throw new Error("TODO: Implement clearance");
     }
 
-    const response = await axios.request<T>({
-      url,
+    const response = await this.fetchFn(url, {
       method,
       headers,
     });
 
-    return response.data;
+    const result = (await response.json()) as T;
+
+    return result;
   }
 
   private async executeResultsRequest<T>(
@@ -221,26 +225,14 @@ export class HaloInfiniteClient {
     );
 
   public getMatchSkill = async (matchId: string, playerIds: string[]) => {
-    try {
-      return await this.executeResultsRequest<MatchSkill>(
-        `https://${HaloCoreEndpoints.SkillOrigin}.${
-          HaloCoreEndpoints.ServiceDomain
-        }/hi/matches/${matchId}/skill?players=${playerIds
-          .map(wrapPlayerId)
-          .join(",")}`,
-        "get"
-      );
-    } catch (e) {
-      if (
-        e instanceof AxiosError &&
-        e.response?.status === 404 &&
-        e.response.data
-      ) {
-        return (e.response.data as ResultsContainer<MatchSkill<0 | 1>>).Value;
-      } else {
-        throw e;
-      }
-    }
+    return await this.executeResultsRequest<MatchSkill>(
+      `https://${HaloCoreEndpoints.SkillOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/matches/${matchId}/skill?players=${playerIds
+        .map(wrapPlayerId)
+        .join(",")}`,
+      "get"
+    );
   };
 
   /** Gets authoring metadata about a specific asset. */

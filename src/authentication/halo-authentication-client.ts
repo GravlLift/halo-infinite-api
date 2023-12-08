@@ -1,8 +1,6 @@
-import axios from "axios";
 import { DateTime } from "luxon";
 import type { SpartanToken } from "../models/spartan-token";
 import type { SpartanTokenRequest } from "../models/spartan-token-request";
-import { coalesceDateTime } from "../util/date-time";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
 
 export interface Token {
@@ -25,10 +23,10 @@ export class HaloAuthenticationClient {
           },
         ],
       };
-      const response = await axios.post<SpartanToken>(
+      const response = await this.fetchFn(
         "https://settings.svc.halowaypoint.com/spartan-token",
-        tokenRequest,
         {
+          body: JSON.stringify(tokenRequest),
           headers: {
             "User-Agent":
               "HaloWaypoint/2021112313511900 CFNetwork/1327.0.4 Darwin/21.2.0",
@@ -37,9 +35,11 @@ export class HaloAuthenticationClient {
         }
       );
 
+      const result = (await response.json()) as SpartanToken;
+
       const newToken = {
-        token: response.data.SpartanToken,
-        expiresAt: DateTime.fromISO(response.data.ExpiresUtc.ISO8601Date),
+        token: result.SpartanToken,
+        expiresAt: DateTime.fromISO(result.ExpiresUtc.ISO8601Date),
       };
       await this.saveToken(newToken);
       return newToken;
@@ -53,7 +53,8 @@ export class HaloAuthenticationClient {
       token: string;
       expiresAt: unknown;
     } | null>,
-    private readonly saveToken: (token: Token) => Promise<void>
+    private readonly saveToken: (token: Token) => Promise<void>,
+    private readonly fetchFn: typeof fetch = fetch
   ) {}
 
   public async getSpartanToken() {
