@@ -1,6 +1,6 @@
 import { GameVariantCategory } from "./game-variant-category";
 
-interface OddballStats {
+export interface OddballStats {
   KillsAsSkullCarrier: number;
   LongestTimeAsSkullCarrier: string;
   SkullCarriersKilled: number;
@@ -8,7 +8,8 @@ interface OddballStats {
   TimeAsSkullCarrier: string;
   SkullScoringTicks: number;
 }
-interface ZonesStats {
+
+export interface ZonesStats {
   StrongholdCaptures: number;
   StrongholdDefensiveKills: number;
   StrongholdOffensiveKills: number;
@@ -16,7 +17,8 @@ interface ZonesStats {
   StrongholdOccupationTime: string;
   StrongholdScoringTicks: number;
 }
-interface CaptureTheFlagStats {
+
+export interface CaptureTheFlagStats {
   FlagCaptureAssists: number;
   FlagCaptures: number;
   FlagCarriersKilled: number;
@@ -30,12 +32,48 @@ interface CaptureTheFlagStats {
   TimeAsFlagCarrier: string;
 }
 
-interface ExtractionStats {
+export interface ExtractionStats {
   SuccessfulExtractions: number;
   ExtractionConversionsDenied: number;
   ExtractionConversionsCompleted: number;
   ExtractionInitiationsDenied: number;
   ExtractionInitiationsCompleted: number;
+}
+
+export interface EliminationStats {
+  AlliesRevived: number;
+  EliminationAssists: number;
+  Eliminations: number;
+  EnemyRevivesDenied: number;
+  Executions: number;
+  KillsAsLastPlayerStanding: number;
+  LastPlayersStandingKilled: number;
+  RoundsSurvived: number;
+  TimesRevivedByAlly: number;
+}
+
+export interface InfectionStats {
+  AlphasKilled: number;
+  SpartansInfected: number;
+  SpartansInfectedAsAlpha: number;
+  KillsAsLastSpartanStanding: number;
+  LastSpartansStandingInfected: number;
+  RoundsAsAlpha: number;
+  RoundsAsLastSpartanStanding: number;
+  RoundsFinishedAsInfected: number;
+  RoundsSurvivedAsSpartan: number;
+  RoundsSurvivedAsLastSpartanStanding: number;
+  TimeAsLastSpartanStanding: string;
+  InfectedKilled: number;
+}
+
+export interface StockpileStats {
+  KillsAsPowerSeedCarrier: number;
+  PowerSeedCarriersKilled: number;
+  PowerSeedsDeposited: number;
+  PowerSeedsStolen: number;
+  TimeAsPowerSeedCarrier: string;
+  TimeAsPowerSeedDriver: string;
 }
 
 type StatsMap = {
@@ -49,7 +87,13 @@ type StatsMap = {
     ExtractionStats: ExtractionStats;
   };
   [GameVariantCategory.MultiplayerFirefight]: {
-    ExtractionStats: ExtractionStats;
+    EliminationStats: EliminationStats;
+  };
+  [GameVariantCategory.MultiplayerInfection]: {
+    InfectionSTats: InfectionStats;
+  };
+  [GameVariantCategory.MultiplayerStockpile]: {
+    StockpileStats: StockpileStats;
   };
 };
 

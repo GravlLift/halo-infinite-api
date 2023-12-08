@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import { DateTime } from "luxon";
 import { TokenPersister } from "../core/token-persisters";
 import { XboxTicket } from "../models/xbox-ticket";
-import { coalesceDateTime } from "../util/date-time";
+import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
 
 export enum RelyingParty {
@@ -51,8 +51,8 @@ export class XboxAuthenticationClient {
         "xbox.userToken"
       )) ?? null
   );
-  private xstsTicketCache = new ExpiryTokenCache(
-    async (userToken: string, relyingParty: RelyingParty) => {
+  private xstsTicketCache = new KeyedExpiryTokenCache(
+    async (relyingParty: RelyingParty, userToken: string) => {
       const response = await this.httpClient.post<XboxTicket>(
         "https://xsts.auth.xboxlive.com/xsts/authorize",
         {
@@ -76,12 +76,15 @@ export class XboxAuthenticationClient {
         ...response.data,
         expiresAt: DateTime.fromISO(response.data.NotAfter),
       };
-      await this.tokenPersister?.save("xbox.xstsTicket", result);
+      await this.tokenPersister?.save(
+        "xbox.xstsTicket." + relyingParty,
+        result
+      );
       return result;
     },
-    async () =>
+    async (relyingParty) =>
       (await this.tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
-        "xbox.xstsTicket"
+        "xbox.xstsTicket." + relyingParty
       )) ?? null
   );
 
@@ -91,8 +94,11 @@ export class XboxAuthenticationClient {
     this.httpClient = axios.create();
   }
 
-  public async getXstsTicket(getOauth2AccessToken: () => Promise<string>) {
-    let xstsTicket = await this.xstsTicketCache.getExistingToken();
+  public async getXstsTicket(
+    getOauth2AccessToken: () => Promise<string>,
+    relyingParty: RelyingParty
+  ) {
+    let xstsTicket = await this.xstsTicketCache.getExistingToken(relyingParty);
     if (!xstsTicket) {
       let userToken = await this.userTokenCache.getExistingToken();
       if (!userToken) {
@@ -103,13 +109,13 @@ export class XboxAuthenticationClient {
         );
       }
       xstsTicket = await this.xstsTicketCache.getToken(
-        userToken.Token,
-        RelyingParty.Halo
+        relyingParty,
+        userToken.Token
       );
     }
     return xstsTicket;
   }
 
-  public getXboxLiveV3Token = (userHash: string, userToken: string) =>
-    `XBL3.0 x=${userHash};${userToken}`;
+  public getXboxLiveV3Token = (xboxTicket: XboxTicket) =>
+    `XBL3.0 x=${xboxTicket.DisplayClaims.xui[0].uhs};${xboxTicket.Token}`;
 }

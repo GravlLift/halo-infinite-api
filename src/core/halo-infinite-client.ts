@@ -15,7 +15,7 @@ import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-conta
 import { ServiceRecord } from "../models/halo-infinite/service-record";
 import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
-import { SpartanTokenProvider } from "./spartan-token-providers";
+import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 
 interface ResultContainer<TValue> {
   Id: string;
@@ -49,7 +49,7 @@ const assetKindUrlMap = {
 };
 
 function wrapPlayerId(playerId: string) {
-  if (/^\w+(\d+)/) {
+  if (/^\w+\(\d+\)/.test(playerId)) {
     return playerId;
   } else {
     // Assume xuid
@@ -197,10 +197,22 @@ export class HaloInfiniteClient {
       params,
       `https://${HaloCoreEndpoints.StatsOrigin}.${
         HaloCoreEndpoints.ServiceDomain
-      }/hi/players/xuid(${wrapPlayerId(playerXuid)})/matches`,
+      }/hi/players/${wrapPlayerId(playerXuid)}/matches`,
       "get"
     );
   };
+
+  public getPlayerServiceRecord(
+    playerXuid: string,
+    type: MatchType = MatchType.All
+  ) {
+    return this.executeRequest<ServiceRecord>(
+      `https://${HaloCoreEndpoints.StatsOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/players/${wrapPlayerId(playerXuid)}/Matchmade/servicerecord`,
+      "get"
+    );
+  }
 
   public getMatchStats = (matchId: string) =>
     this.executeRequest<MatchStats>(

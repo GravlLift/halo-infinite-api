@@ -2,6 +2,7 @@ export {
   HaloInfiniteClient,
   AssetKindTypeMap,
 } from "./core/halo-infinite-client";
+export { XboxClient } from "./core/xbox-client";
 export {
   XboxAuthenticationClient,
   RelyingParty,
@@ -21,8 +22,11 @@ export { MatchOutcome } from "./models/halo-infinite/match-outcome";
 export { MatchSkill } from "./models/halo-infinite/match-skill";
 export { AssetVersionLink } from "./models/halo-infinite/asset-version-link";
 export { MatchInfo } from "./models/halo-infinite/match-info";
-export { SpartanTokenProvider } from "./core/spartan-token-providers";
-export { AutoXstsSpartanTokenProvider } from "./core/spartan-token-providers/auto-xsts-spartan-token-provider";
-export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
+export { SpartanTokenProvider } from "./core/token-providers/spartan-token-providers";
+export {
+  AutoTokenProvider,
+  AutoTokenProvider as AutoXstsSpartanTokenProvider,
+} from "./core/token-providers/auto-token-provider";
+export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
 export { TokenPersister } from "./core/token-persisters";
 export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";

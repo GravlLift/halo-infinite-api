@@ -7,6 +7,7 @@ export enum GameVariantCategory {
   MultiplayerTotalControl = 14,
   MultiplayerCtf = 15,
   MultiplayerOddball = 18,
+  MultiplayerStockpile = 19,
   MultiplayerInfection = 22,
   MultiplayerGrifball = 25,
   MultiplayerLandGrab = 39,
