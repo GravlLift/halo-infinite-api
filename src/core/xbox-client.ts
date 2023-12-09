@@ -1,16 +1,14 @@
+import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { XboxTokenProvider } from "./token-providers/xbox-token-provider";
 
 export class XboxClient {
-  private readonly fetchFn: typeof fetch;
   constructor(
-    private xboxTokenProvider: XboxTokenProvider,
-    fetchFn?: typeof fetch
-  ) {
-    this.fetchFn = fetchFn ?? fetch;
-  }
+    private readonly xboxTokenProvider: XboxTokenProvider,
+    private readonly fetchFn: FetchFunction = defaultFetch
+  ) {}
 
   private async executeRequest<T>(url: string, method: RequestInit["method"]) {
-    const response = await this.fetchFn(url, {
+    const result = await this.fetchFn<T>(url, {
       method,
       headers: {
         Accept: "application/json",
@@ -18,8 +16,6 @@ export class XboxClient {
         "x-xbl-contract-version": "1",
       },
     });
-
-    const result = (await response.json()) as T;
 
     return result;
   }

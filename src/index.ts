@@ -30,3 +30,4 @@ export {
 export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
 export { TokenPersister } from "./core/token-persisters";
 export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";
+export { FetchFunction } from "./util/fetch-function";

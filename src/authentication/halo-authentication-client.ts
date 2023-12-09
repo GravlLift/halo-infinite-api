@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import type { SpartanToken } from "../models/spartan-token";
 import type { SpartanTokenRequest } from "../models/spartan-token-request";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
+import { FetchFunction, defaultFetch } from "../util/fetch-function";
 
 export interface Token {
   token: string;
@@ -23,7 +24,7 @@ export class HaloAuthenticationClient {
           },
         ],
       };
-      const response = await this.fetchFn(
+      const result = await this.fetchFn<SpartanToken>(
         "https://settings.svc.halowaypoint.com/spartan-token",
         {
           method: "POST",
@@ -35,8 +36,6 @@ export class HaloAuthenticationClient {
           },
         }
       );
-
-      const result = (await response.json()) as SpartanToken;
 
       const newToken = {
         token: result.SpartanToken,
@@ -55,7 +54,7 @@ export class HaloAuthenticationClient {
       expiresAt: unknown;
     } | null>,
     private readonly saveToken: (token: Token) => Promise<void>,
-    private readonly fetchFn: typeof fetch = fetch
+    private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
   public async getSpartanToken() {

@@ -7,6 +7,7 @@ import { HaloAuthenticationClient } from "../../authentication/halo-authenticati
 import { SpartanTokenProvider } from "./spartan-token-providers";
 import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 import { XboxTokenProvider } from "./xbox-token-provider";
+import { FetchFunction } from "src/util/fetch-function";
 
 /**
  * A SpartanTokenProvider that fetches both the Xbox and Halo tokens in the same
@@ -21,7 +22,8 @@ export class AutoTokenProvider
 
   constructor(
     getOauth2AccessToken: () => Promise<string>,
-    tokenPersister?: TokenPersister
+    tokenPersister?: TokenPersister,
+    fetchFn?: FetchFunction
   ) {
     let actualTokenPersister: TokenPersister;
     if (tokenPersister) {
@@ -29,7 +31,10 @@ export class AutoTokenProvider
     } else {
       actualTokenPersister = inMemoryTokenPersister;
     }
-    const xboxAuthClient = new XboxAuthenticationClient(tokenPersister);
+    const xboxAuthClient = new XboxAuthenticationClient(
+      tokenPersister,
+      fetchFn
+    );
     const haloAuthClient = new HaloAuthenticationClient(
       async () => {
         const xstsTicket = await xboxAuthClient.getXstsTicket(
@@ -41,7 +46,8 @@ export class AutoTokenProvider
       async () => await actualTokenPersister.load("halo.authToken"),
       async (token) => {
         await actualTokenPersister.save("halo.authToken", token);
-      }
+      },
+      fetchFn
     );
 
     this.getSpartanToken = () => haloAuthClient.getSpartanToken();

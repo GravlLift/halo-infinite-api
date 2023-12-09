@@ -1,3 +1,4 @@
+import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
 import {
   MapAsset,
@@ -66,13 +67,10 @@ function unwrapPlayerId(playerId: string) {
 }
 
 export class HaloInfiniteClient {
-  private readonly fetchFn: typeof fetch;
   constructor(
-    private spartanTokenProvider: SpartanTokenProvider,
-    fetchFn?: typeof fetch
-  ) {
-    this.fetchFn = fetchFn ?? fetch;
-  }
+    private readonly spartanTokenProvider: SpartanTokenProvider,
+    private readonly fetchFn: FetchFunction = defaultFetch
+  ) {}
 
   private async executeRequest<T>(
     url: string,
@@ -95,12 +93,10 @@ export class HaloInfiniteClient {
       throw new Error("TODO: Implement clearance");
     }
 
-    const response = await this.fetchFn(url, {
+    const result = await this.fetchFn<T>(url, {
       method,
       headers,
     });
-
-    const result = (await response.json()) as T;
 
     return result;
   }

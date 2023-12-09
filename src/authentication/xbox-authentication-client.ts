@@ -3,6 +3,7 @@ import { TokenPersister } from "../core/token-persisters";
 import { XboxTicket } from "../models/xbox-ticket";
 import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
+import { FetchFunction, defaultFetch } from "../util/fetch-function";
 
 export enum RelyingParty {
   Xbox = "http://xboxlive.com",
@@ -18,7 +19,7 @@ export interface XboxAuthenticationToken {
 export class XboxAuthenticationClient {
   private userTokenCache = new ExpiryTokenCache(
     async (accessToken: string) => {
-      const response = await this.fetchFn(
+      const result = await this.fetchFn<XboxTicket>(
         "https://user.auth.xboxlive.com/user/authenticate",
         {
           method: "POST",
@@ -39,8 +40,6 @@ export class XboxAuthenticationClient {
         }
       );
 
-      const result = (await response.json()) as XboxTicket;
-
       const token = {
         ...result,
         expiresAt: DateTime.fromISO(result.NotAfter),
@@ -55,7 +54,7 @@ export class XboxAuthenticationClient {
   );
   private xstsTicketCache = new KeyedExpiryTokenCache(
     async (relyingParty: RelyingParty, userToken: string) => {
-      const response = await this.fetchFn(
+      const result = await this.fetchFn<XboxTicket>(
         "https://xsts.auth.xboxlive.com/xsts/authorize",
         {
           method: "POST",
@@ -74,7 +73,6 @@ export class XboxAuthenticationClient {
           }),
         }
       );
-      const result = (await response.json()) as XboxTicket;
 
       const token = {
         ...result,
@@ -91,7 +89,7 @@ export class XboxAuthenticationClient {
 
   constructor(
     private readonly tokenPersister?: TokenPersister,
-    private readonly fetchFn: typeof fetch = fetch
+    private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
   public async getXstsTicket(
