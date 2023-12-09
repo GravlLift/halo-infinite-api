@@ -1,9 +1,13 @@
 {
   "name": "halo-infinite-api",
   "type": "module",
-  "version": "5.1.2",
+  "version": "5.2.0",
   "description": "An NPM package for accessing the official Halo Infinite API.",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./token-persisters": "./dist/core/token-persisters/index.js"
+  },
   "scripts": {
     "prepack": "tsc --project tsconfig.app.json"
   },

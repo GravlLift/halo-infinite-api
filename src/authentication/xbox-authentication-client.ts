@@ -44,13 +44,17 @@ export class XboxAuthenticationClient {
         ...result,
         expiresAt: DateTime.fromISO(result.NotAfter),
       };
-      await this.tokenPersister?.save("xbox.userToken", token);
+      await (await this.tokenPersisterOrPromise)?.save("xbox.userToken", token);
       return token;
     },
-    async () =>
-      (await this.tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
-        "xbox.userToken"
-      )) ?? null
+    async () => {
+      const tokenPersister = await this.tokenPersisterOrPromise;
+      return (
+        (await tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
+          "xbox.userToken"
+        )) ?? null
+      );
+    }
   );
   private xstsTicketCache = new KeyedExpiryTokenCache(
     async (relyingParty: RelyingParty, userToken: string) => {
@@ -78,17 +82,23 @@ export class XboxAuthenticationClient {
         ...result,
         expiresAt: DateTime.fromISO(result.NotAfter),
       };
-      await this.tokenPersister?.save("xbox.xstsTicket." + relyingParty, token);
+      await (
+        await this.tokenPersisterOrPromise
+      )?.save("xbox.xstsTicket." + relyingParty, token);
       return token;
     },
     async (relyingParty) =>
-      (await this.tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
+      (await (
+        await this.tokenPersisterOrPromise
+      )?.load<XboxTicket & { expiresAt: unknown }>(
         "xbox.xstsTicket." + relyingParty
       )) ?? null
   );
 
   constructor(
-    private readonly tokenPersister?: TokenPersister,
+    private readonly tokenPersisterOrPromise?:
+      | TokenPersister
+      | Promise<TokenPersister>,
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 

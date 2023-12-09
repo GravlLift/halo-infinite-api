@@ -28,6 +28,6 @@ export {
   AutoTokenProvider as AutoXstsSpartanTokenProvider,
 } from "./core/token-providers/auto-token-provider";
 export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
-export { TokenPersister } from "./core/token-persisters";
+export { TokenPersister } from "./core/token-persisters/token-persister";
 export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";
 export { FetchFunction } from "./util/fetch-function";

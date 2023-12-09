@@ -14,8 +14,11 @@ export class StaticXstsTicketTokenSpartanTokenProvider
 {
   public readonly getSpartanToken: () => Promise<string>;
 
-  constructor(xstsTicketToken: string, tokenPersister?: TokenPersister) {
-    let actualTokenPersister: TokenPersister;
+  constructor(
+    xstsTicketToken: string,
+    tokenPersister?: TokenPersister | Promise<TokenPersister>
+  ) {
+    let actualTokenPersister: TokenPersister | Promise<TokenPersister>;
     if (tokenPersister) {
       actualTokenPersister = tokenPersister;
     } else {
@@ -24,9 +27,10 @@ export class StaticXstsTicketTokenSpartanTokenProvider
 
     const haloAuthClient = new HaloAuthenticationClient(
       () => xstsTicketToken,
-      async () => await actualTokenPersister.load("halo.authToken"),
+      async () =>
+        (await (await actualTokenPersister).load("halo.authToken")) ?? null,
       async (token) => {
-        await actualTokenPersister.save("halo.authToken", token);
+        await (await actualTokenPersister).save("halo.authToken", token);
       }
     );
 

@@ -28,7 +28,7 @@ export class XboxClient {
             id: string;
             gamertag: string;
             displayPicUri: string;
-            score: 0.0;
+            score: number;
           };
           text: string;
         }

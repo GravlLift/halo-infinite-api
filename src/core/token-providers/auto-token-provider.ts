@@ -22,14 +22,14 @@ export class AutoTokenProvider
 
   constructor(
     getOauth2AccessToken: () => Promise<string>,
-    tokenPersister?: TokenPersister,
+    tokenPersister?: TokenPersister | Promise<TokenPersister>,
     fetchFn?: FetchFunction
   ) {
-    let actualTokenPersister: TokenPersister;
+    let tokenPeristerOrPromise: TokenPersister | Promise<TokenPersister>;
     if (tokenPersister) {
-      actualTokenPersister = tokenPersister;
+      tokenPeristerOrPromise = tokenPersister;
     } else {
-      actualTokenPersister = inMemoryTokenPersister;
+      tokenPeristerOrPromise = inMemoryTokenPersister;
     }
     const xboxAuthClient = new XboxAuthenticationClient(
       tokenPersister,
@@ -43,9 +43,13 @@ export class AutoTokenProvider
         );
         return xstsTicket.Token;
       },
-      async () => await actualTokenPersister.load("halo.authToken"),
+      async () => {
+        const tokenPersister = await tokenPeristerOrPromise;
+        return await tokenPersister.load("halo.authToken");
+      },
       async (token) => {
-        await actualTokenPersister.save("halo.authToken", token);
+        const tokenPersister = await tokenPeristerOrPromise;
+        await tokenPersister.save("halo.authToken", token);
       },
       fetchFn
     );
