@@ -26,6 +26,7 @@ export class HaloAuthenticationClient {
       const response = await this.fetchFn(
         "https://settings.svc.halowaypoint.com/spartan-token",
         {
+          method: "POST",
           body: JSON.stringify(tokenRequest),
           headers: {
             "User-Agent":
