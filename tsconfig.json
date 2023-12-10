@@ -2,6 +2,7 @@
   "files": [],
   "include": [],
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,

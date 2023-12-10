@@ -1,7 +1,7 @@
 {
   "name": "halo-infinite-api",
   "type": "module",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "An NPM package for accessing the official Halo Infinite API.",
   "main": "dist/index.js",
   "exports": {

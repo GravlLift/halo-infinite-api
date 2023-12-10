@@ -33,6 +33,7 @@ export class HaloAuthenticationClient {
             "User-Agent":
               "HaloWaypoint/2021112313511900 CFNetwork/1327.0.4 Darwin/21.2.0",
             "Content-Type": "application/json; charset=utf-8",
+            Accept: "application/json, text/plain, */*",
           },
         }
       );

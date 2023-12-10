@@ -31,3 +31,5 @@ export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-provider
 export { TokenPersister } from "./core/token-persisters/token-persister";
 export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";
 export { FetchFunction } from "./util/fetch-function";
+export { HaloAuthenticationClient } from "./authentication/halo-authentication-client";
+export { XboxAuthenticationToken } from "./authentication/xbox-authentication-client";
