@@ -16,7 +16,12 @@ export { GameVariantCategory } from "./models/halo-infinite/game-variant-categor
 export { MatchStats } from "./models/halo-infinite/match-stats";
 export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history";
 export { Stats } from "./models/halo-infinite/stats";
-export { MapAsset, UgcGameVariantAsset } from "./models/halo-infinite/asset";
+export {
+  MapAsset,
+  UgcGameVariantAsset,
+  PlaylistAsset,
+  Asset,
+} from "./models/halo-infinite/asset";
 export { AssetKind } from "./models/halo-infinite/asset-kind";
 export { MatchOutcome } from "./models/halo-infinite/match-outcome";
 export { MatchSkill } from "./models/halo-infinite/match-skill";

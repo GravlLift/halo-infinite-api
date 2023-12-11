@@ -72,29 +72,21 @@ export class HaloInfiniteClient {
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  private async executeRequest<T>(
-    url: string,
-    method: RequestInit["method"],
-    useSpartanToken = true,
-    useClearance = false,
-    userAgent: string = GlobalConstants.HALO_WAYPOINT_USER_AGENT
-  ) {
-    const headers: HeadersInit = {
-      "User-Agent": userAgent,
-      Accept: "application/json",
-    };
-
-    if (useSpartanToken) {
-      headers["x-343-authorization-spartan"] =
-        await this.spartanTokenProvider.getSpartanToken();
+  private async executeRequest<T>(url: string, init: RequestInit) {
+    const headers = new Headers(init.headers);
+    if (!headers.has("User-Agent")) {
+      headers.set("User-Agent", GlobalConstants.HALO_PC_USER_AGENT);
     }
-
-    if (useClearance) {
-      throw new Error("TODO: Implement clearance");
+    if (!headers.has("Accept")) {
+      headers.set("Accept", "application/json");
     }
+    headers.set(
+      "x-343-authorization-spartan",
+      await this.spartanTokenProvider.getSpartanToken()
+    );
 
     const result = await this.fetchFn<T>(url, {
-      method,
+      ...init,
       headers,
     });
 
@@ -132,60 +124,93 @@ export class HaloInfiniteClient {
    * @param playlistId - Unique ID for the playlist.
    * @param playerIds - Array of player xuids.
    */
-  public getPlaylistCsr = (playlistId: string, playerIds: string[]) =>
+  public getPlaylistCsr = (
+    playlistId: string,
+    playerIds: string[],
+    init?: Omit<RequestInit, "body" | "method">
+  ) =>
     this.executeResultsRequest<PlaylistCsrContainer>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/playlist/${playlistId}/csrs?players=${playerIds
         .map(wrapPlayerId)
         .join(",")}`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
 
   /** Get gamertag info for a player.
    * @param gamerTag - Gamertag to lookup.
    */
-  public getUser = (gamerTag: string) =>
+  public getUser = (
+    gamerTag: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ) =>
     this.executeRequest<UserInfo>(
       `https://${HaloCoreEndpoints.Profile}.${HaloCoreEndpoints.ServiceDomain}/users/gt(${gamerTag})`,
-      "get"
+
+      {
+        ...init,
+        method: "get",
+      }
     );
 
   /** Get gamertag info for several players.
    * @param xuids - Xuids to lookup.
    */
-  public getUsers = (xuids: string[]) => {
+  public getUsers = (
+    xuids: string[],
+    init?: Omit<RequestInit, "body" | "method">
+  ) => {
     return this.executeRequest<UserInfo[]>(
       `https://${HaloCoreEndpoints.Profile}.${
         HaloCoreEndpoints.ServiceDomain
       }/users?xuids=${xuids.map((x) => unwrapPlayerId(x)).join(",")}`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
   };
 
   /** Get service record for a player.
    * @param gamerTag - Gamertag to lookup.
    */
-  public getUserServiceRecord = (gamerTag: string) =>
+  public getUserServiceRecord = (
+    gamerTag: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ) =>
     this.executeRequest<ServiceRecord>(
       `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/players/${gamerTag}/Matchmade/servicerecord`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
 
   /** Get playlist information
    * @param playlistId - Unique ID for the playlist.
    */
-  public getPlaylist = (playlistId: string) =>
+  public getPlaylist = (
+    playlistId: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ) =>
     this.executeRequest<Playlist>(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/multiplayer/file/playlists/assets/${playlistId}.json`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
 
   public getPlayerMatches = (
     playerXuid: string,
     type: MatchType = MatchType.All,
     count: number = 25,
-    start: number = 0
+    start: number = 0,
+    init?: Omit<RequestInit, "body" | "method">
   ) => {
     let params: Record<string, string> = {};
     if (type !== MatchType.All) {
@@ -198,57 +223,84 @@ export class HaloInfiniteClient {
       `https://${HaloCoreEndpoints.StatsOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/players/${wrapPlayerId(playerXuid)}/matches`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
   };
 
   public getPlayerServiceRecord(
     playerXuid: string,
-    type: MatchType = MatchType.All
+    init?: Omit<RequestInit, "body" | "method">
   ) {
     return this.executeRequest<ServiceRecord>(
       `https://${HaloCoreEndpoints.StatsOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/players/${wrapPlayerId(playerXuid)}/Matchmade/servicerecord`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
   }
 
-  public getMatchStats = (matchId: string) =>
+  public getMatchStats = (
+    matchId: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ) =>
     this.executeRequest<MatchStats>(
       `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/matches/${matchId}/stats`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
 
-  public getMatchSkill = async (matchId: string, playerIds: string[]) => {
+  public getMatchSkill = async (
+    matchId: string,
+    playerIds: string[],
+    init?: Omit<RequestInit, "body" | "method">
+  ) => {
     return await this.executeResultsRequest<MatchSkill>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/matches/${matchId}/skill?players=${playerIds
         .map(wrapPlayerId)
         .join(",")}`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
   };
 
   /** Gets authoring metadata about a specific asset. */
   public getAsset = <TAssetType extends keyof AssetKindTypeMap>(
     assetType: TAssetType,
-    assetId: string
+    assetId: string,
+    init?: Omit<RequestInit, "body" | "method">
   ) =>
     this.executeRequest<AssetKindTypeMap[TAssetType]>(
       `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/${assetKindUrlMap[assetType]}/${assetId}`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
 
   /** Gets metadata related to a concrete version of a specified asset. */
   public getSpecificAssetVersion = <TAssetType extends keyof AssetKindTypeMap>(
     assetType: TAssetType,
     assetId: string,
-    versionId: string
+    versionId: string,
+    init?: Omit<RequestInit, "body" | "method">
   ) =>
     this.executeRequest<AssetKindTypeMap[TAssetType]>(
       `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/${assetKindUrlMap[assetType]}/${assetId}/versions/${versionId}`,
-      "get"
+      {
+        ...init,
+        method: "get",
+      }
     );
 }

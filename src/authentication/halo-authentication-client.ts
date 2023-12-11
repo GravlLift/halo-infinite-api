@@ -3,6 +3,7 @@ import type { SpartanToken } from "../models/spartan-token";
 import type { SpartanTokenRequest } from "../models/spartan-token-request";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
+import { GlobalConstants } from "../util/global-contants";
 
 export interface Token {
   token: string;
@@ -30,8 +31,7 @@ export class HaloAuthenticationClient {
           method: "POST",
           body: JSON.stringify(tokenRequest),
           headers: {
-            "User-Agent":
-              "HaloWaypoint/2021112313511900 CFNetwork/1327.0.4 Darwin/21.2.0",
+            "User-Agent": GlobalConstants.HALO_WAYPOINT_USER_AGENT,
             "Content-Type": "application/json; charset=utf-8",
             Accept: "application/json, text/plain, */*",
           },

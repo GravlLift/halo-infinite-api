@@ -7,7 +7,7 @@ import { HaloAuthenticationClient } from "../../authentication/halo-authenticati
 import { SpartanTokenProvider } from "./spartan-token-providers";
 import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 import { XboxTokenProvider } from "./xbox-token-provider";
-import { FetchFunction } from "src/util/fetch-function";
+import type { FetchFunction } from "../../util/fetch-function";
 
 /**
  * A SpartanTokenProvider that fetches both the Xbox and Halo tokens in the same
