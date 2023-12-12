@@ -17,13 +17,13 @@ import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 
-interface ResultContainer<TValue> {
+export interface ResultContainer<TValue> {
   Id: string;
   ResultCode: 0 | 1;
   Result: TValue;
 }
 
-interface ResultsContainer<TValue> {
+export interface ResultsContainer<TValue> {
   Value: ResultContainer<TValue>[];
 }
 
@@ -127,19 +127,23 @@ export class HaloInfiniteClient {
   public getPlaylistCsr = (
     playlistId: string,
     playerIds: string[],
+    seasonId?: string,
     init?: Omit<RequestInit, "body" | "method">
-  ) =>
-    this.executeResultsRequest<PlaylistCsrContainer>(
-      `https://${HaloCoreEndpoints.SkillOrigin}.${
-        HaloCoreEndpoints.ServiceDomain
-      }/hi/playlist/${playlistId}/csrs?players=${playerIds
-        .map(wrapPlayerId)
-        .join(",")}`,
+  ) => {
+    const urlParams = new URLSearchParams({
+      players: playerIds.map(wrapPlayerId).join(","),
+    });
+    if (seasonId) {
+      urlParams.set("seasonId", seasonId);
+    }
+    return this.executeResultsRequest<PlaylistCsrContainer>(
+      `https://${HaloCoreEndpoints.SkillOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/playlist/${playlistId}/csrs?${urlParams}`,
       {
         ...init,
         method: "get",
       }
     );
+  };
 
   /** Get gamertag info for a player.
    * @param gamerTag - Gamertag to lookup.
