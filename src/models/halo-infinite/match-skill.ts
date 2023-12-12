@@ -1,13 +1,4 @@
-interface CsrObject {
-  Value: number;
-  MeasurementMatchesRemaining: number;
-  Tier: string;
-  TierStart: number;
-  NextTier: string;
-  NextTierStart: number;
-  NextSubTier: number;
-  InitialMeasurementMatches: number;
-}
+import { PlaylistCsr } from "./playlist-csr";
 
 interface StatPerformance {
   Count: number;
@@ -27,8 +18,8 @@ export interface MatchSkill<TResult extends 1 | 0 = 0> {
     [key: number]: number;
   };
   RankRecap: {
-    PreMatchCsr: CsrObject;
-    PostMatchCsr: CsrObject;
+    PreMatchCsr: PlaylistCsr;
+    PostMatchCsr: PlaylistCsr;
   };
   StatPerformances: TResult extends 0
     ? {
