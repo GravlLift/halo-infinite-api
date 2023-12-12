@@ -8,4 +8,6 @@ export interface PlaylistCsr {
   NextTierStart: number;
   NextSubTier: number;
   InitialMeasurementMatches: number;
+  DemotionProtectionMatchesRemaining: number;
+  InitialDemotionProtectionMatches: number;
 }
