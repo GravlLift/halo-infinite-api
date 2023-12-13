@@ -4,6 +4,7 @@ import type { SpartanTokenRequest } from "../models/spartan-token-request";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { GlobalConstants } from "../util/global-contants";
+import { RequestError } from "../util/request-error";
 
 export interface Token {
   token: string;
@@ -25,25 +26,28 @@ export class HaloAuthenticationClient {
           },
         ],
       };
-      const result = await this.fetchFn<SpartanToken>(
-        "https://settings.svc.halowaypoint.com/spartan-token",
-        {
-          method: "POST",
-          body: JSON.stringify(tokenRequest),
-          headers: {
-            "User-Agent": GlobalConstants.HALO_WAYPOINT_USER_AGENT,
-            "Content-Type": "application/json; charset=utf-8",
-            Accept: "application/json, text/plain, */*",
-          },
-        }
-      );
+      const url = "https://settings.svc.halowaypoint.com/spartan-token";
+      const response = await this.fetchFn(url, {
+        method: "POST",
+        body: JSON.stringify(tokenRequest),
+        headers: {
+          "User-Agent": GlobalConstants.HALO_WAYPOINT_USER_AGENT,
+          "Content-Type": "application/json; charset=utf-8",
+          Accept: "application/json, text/plain, */*",
+        },
+      });
+      if (response.status >= 200 && response.status < 300) {
+        const result = (await response.json()) as SpartanToken;
 
-      const newToken = {
-        token: result.SpartanToken,
-        expiresAt: DateTime.fromISO(result.ExpiresUtc.ISO8601Date),
-      };
-      await this.saveToken(newToken);
-      return newToken;
+        const newToken = {
+          token: result.SpartanToken,
+          expiresAt: DateTime.fromISO(result.ExpiresUtc.ISO8601Date),
+        };
+        await this.saveToken(newToken);
+        return newToken;
+      } else {
+        throw new RequestError(url, response);
+      }
     },
     () => this.loadToken()
   );

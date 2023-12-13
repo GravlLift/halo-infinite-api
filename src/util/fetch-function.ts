@@ -1,12 +1,9 @@
-export type FetchFunction = <TResponse = unknown>(
+export type FetchFunction = (
   input: RequestInfo | URL,
   init?: RequestInit
-) => Promise<TResponse>;
+) => Promise<Response>;
 
-export const defaultFetch = async <TResponse>(
+export const defaultFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit
-): Promise<TResponse> => {
-  const response = await fetch(input, init);
-  return response.json();
-};
+): Promise<Response> => fetch(input, init);

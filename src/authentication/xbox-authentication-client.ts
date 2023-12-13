@@ -4,6 +4,7 @@ import { XboxTicket } from "../models/xbox-ticket";
 import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
+import { RequestError } from "../util/request-error";
 
 export enum RelyingParty {
   Xbox = "http://xboxlive.com",
@@ -19,33 +20,39 @@ export interface XboxAuthenticationToken {
 export class XboxAuthenticationClient {
   private userTokenCache = new ExpiryTokenCache(
     async (accessToken: string) => {
-      const result = await this.fetchFn<XboxTicket>(
-        "https://user.auth.xboxlive.com/user/authenticate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "x-xbl-contract-version": "1",
+      const url = "https://user.auth.xboxlive.com/user/authenticate";
+      const response = await this.fetchFn(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "x-xbl-contract-version": "1",
+        },
+        body: JSON.stringify({
+          RelyingParty: "http://auth.xboxlive.com",
+          TokenType: "JWT",
+          Properties: {
+            AuthMethod: "RPS",
+            SiteName: "user.auth.xboxlive.com",
+            RpsTicket: `d=${accessToken}`,
           },
-          body: JSON.stringify({
-            RelyingParty: "http://auth.xboxlive.com",
-            TokenType: "JWT",
-            Properties: {
-              AuthMethod: "RPS",
-              SiteName: "user.auth.xboxlive.com",
-              RpsTicket: `d=${accessToken}`,
-            },
-          }),
-        }
-      );
+        }),
+      });
 
-      const token = {
-        ...result,
-        expiresAt: DateTime.fromISO(result.NotAfter),
-      };
-      await (await this.tokenPersisterOrPromise)?.save("xbox.userToken", token);
-      return token;
+      if (response.status >= 200 && response.status < 300) {
+        const result = (await response.json()) as XboxTicket;
+
+        const token = {
+          ...result,
+          expiresAt: DateTime.fromISO(result.NotAfter),
+        };
+        await (
+          await this.tokenPersisterOrPromise
+        )?.save("xbox.userToken", token);
+        return token;
+      } else {
+        throw new RequestError(url, response);
+      }
     },
     async () => {
       const tokenPersister = await this.tokenPersisterOrPromise;
@@ -58,34 +65,38 @@ export class XboxAuthenticationClient {
   );
   private xstsTicketCache = new KeyedExpiryTokenCache(
     async (relyingParty: RelyingParty, userToken: string) => {
-      const result = await this.fetchFn<XboxTicket>(
-        "https://xsts.auth.xboxlive.com/xsts/authorize",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "x-xbl-contract-version": "1",
+      const url = "https://xsts.auth.xboxlive.com/xsts/authorize";
+      const response = await this.fetchFn(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "x-xbl-contract-version": "1",
+        },
+        body: JSON.stringify({
+          RelyingParty: relyingParty,
+          TokenType: "JWT",
+          Properties: {
+            SandboxId: "RETAIL",
+            UserTokens: [userToken],
           },
-          body: JSON.stringify({
-            RelyingParty: relyingParty,
-            TokenType: "JWT",
-            Properties: {
-              SandboxId: "RETAIL",
-              UserTokens: [userToken],
-            },
-          }),
-        }
-      );
+        }),
+      });
 
-      const token = {
-        ...result,
-        expiresAt: DateTime.fromISO(result.NotAfter),
-      };
-      await (
-        await this.tokenPersisterOrPromise
-      )?.save("xbox.xstsTicket." + relyingParty, token);
-      return token;
+      if (response.status >= 200 && response.status < 300) {
+        const result = (await response.json()) as XboxTicket;
+
+        const token = {
+          ...result,
+          expiresAt: DateTime.fromISO(result.NotAfter),
+        };
+        await (
+          await this.tokenPersisterOrPromise
+        )?.save("xbox.xstsTicket." + relyingParty, token);
+        return token;
+      } else {
+        throw new RequestError(url, response);
+      }
     },
     async (relyingParty) =>
       (await (

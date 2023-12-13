@@ -40,3 +40,4 @@ export { ServiceRecord } from "./models/halo-infinite/service-record";
 export { Stats } from "./models/halo-infinite/stats";
 export { UserInfo } from "./models/halo-infinite/user-info";
 export { FetchFunction } from "./util/fetch-function";
+export { RequestError } from "./util/request-error";

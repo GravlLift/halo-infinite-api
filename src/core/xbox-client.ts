@@ -1,3 +1,4 @@
+import { RequestError } from "../util/request-error";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { XboxTokenProvider } from "./token-providers/xbox-token-provider";
 
@@ -21,12 +22,16 @@ export class XboxClient {
     if (!headers.has("x-xbl-contract-version")) {
       headers.set("x-xbl-contract-version", "1");
     }
-    const result = await this.fetchFn<T>(url, {
+    const response = await this.fetchFn(url, {
       ...init,
       headers,
     });
 
-    return result;
+    if (response.status >= 200 && response.status < 300) {
+      return (await response.json()) as T;
+    } else {
+      throw new RequestError(url, response);
+    }
   }
 
   public async searchUsers(

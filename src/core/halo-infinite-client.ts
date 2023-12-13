@@ -16,6 +16,7 @@ import { ServiceRecord } from "../models/halo-infinite/service-record";
 import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
+import { RequestError } from "../util/request-error";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -85,20 +86,35 @@ export class HaloInfiniteClient {
       await this.spartanTokenProvider.getSpartanToken()
     );
 
-    const result = await this.fetchFn<T>(url, {
+    const response = await this.fetchFn(url, {
       ...init,
       headers,
     });
 
-    return result;
+    if (response.status >= 200 && response.status < 300) {
+      return (await response.json()) as T;
+    } else {
+      throw new RequestError(url, response);
+    }
   }
 
   private async executeResultsRequest<T>(
     ...args: Parameters<HaloInfiniteClient["executeRequest"]>
   ) {
-    const result = await this.executeRequest<ResultsContainer<T>>(...args);
-
-    return result.Value;
+    let resultsContainer: ResultsContainer<T>;
+    try {
+      resultsContainer = await this.executeRequest<ResultsContainer<T>>(
+        ...args
+      );
+    } catch (e) {
+      if (e instanceof RequestError && e.response.status === 404) {
+        // 404s if even one of the xuids is invalid
+        resultsContainer = (await e.response.json()) as ResultsContainer<T>;
+      } else {
+        throw e;
+      }
+    }
+    return resultsContainer.Value;
   }
 
   private async executePaginationRequest<T>(
@@ -265,8 +281,8 @@ export class HaloInfiniteClient {
     matchId: string,
     playerIds: string[],
     init?: Omit<RequestInit, "body" | "method">
-  ) => {
-    return await this.executeResultsRequest<MatchSkill>(
+  ) =>
+    await this.executeResultsRequest<MatchSkill>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/matches/${matchId}/skill?players=${playerIds
@@ -277,7 +293,6 @@ export class HaloInfiniteClient {
         method: "get",
       }
     );
-  };
 
   /** Gets authoring metadata about a specific asset. */
   public getAsset = <TAssetType extends keyof AssetKindTypeMap>(
