@@ -17,6 +17,7 @@ import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 import { RequestError } from "../util/request-error";
+import { MatchesPrivacy } from "src/models/halo-infinite/matches-privacy";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -322,4 +323,49 @@ export class HaloInfiniteClient {
         method: "get",
       }
     );
+
+  public getCurrentUser = (
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<{ xuid: string; notificationsReadDate: string }> =>
+    this.executeRequest(
+      `https://${HaloCoreEndpoints.CommsOrigin}.${HaloCoreEndpoints.ServiceDomain}/users/me`,
+      {
+        ...init,
+        method: "get",
+      }
+    );
+
+  public getMatchesPrivacy = (
+    playerXuid: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<MatchesPrivacy> =>
+    this.executeRequest(
+      `https://${HaloCoreEndpoints.StatsOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/players/${wrapPlayerId(playerXuid)}/matches-privacy`,
+      {
+        ...init,
+        method: "get",
+      }
+    );
+
+  public updateMatchesPrivacy = (
+    playerXuid: string,
+    matchesPrivacy: MatchesPrivacy,
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<MatchesPrivacy> => {
+    const headers = new Headers(init?.headers);
+    headers.set("Content-Type", "application/json");
+    return this.executeRequest(
+      `https://${HaloCoreEndpoints.StatsOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/players/${wrapPlayerId(playerXuid)}/matches-privacy`,
+      {
+        ...init,
+        method: "put",
+        headers,
+        body: JSON.stringify({ matchesPrivacy }),
+      }
+    );
+  };
 }

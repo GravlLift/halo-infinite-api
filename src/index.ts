@@ -31,6 +31,10 @@ export { MatchOutcome } from "./models/halo-infinite/match-outcome";
 export { MatchSkill } from "./models/halo-infinite/match-skill";
 export { MatchStats } from "./models/halo-infinite/match-stats";
 export { MatchType } from "./models/halo-infinite/match-type";
+export {
+  MatchesPrivacy,
+  Privacy,
+} from "./models/halo-infinite/matches-privacy";
 export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history";
 export { Playlist } from "./models/halo-infinite/playlist";
 export { PlaylistCsr } from "./models/halo-infinite/playlist-csr";
