@@ -45,3 +45,4 @@ export { Stats } from "./models/halo-infinite/stats";
 export { UserInfo } from "./models/halo-infinite/user-info";
 export { FetchFunction } from "./util/fetch-function";
 export { RequestError } from "./util/request-error";
+export { XboxTicket } from "./models/xbox-ticket";
