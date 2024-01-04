@@ -22,6 +22,7 @@ export {
   MapAsset,
   PlaylistAsset,
   UgcGameVariantAsset,
+  MapModePairAsset,
 } from "./models/halo-infinite/asset";
 export { AssetKind } from "./models/halo-infinite/asset-kind";
 export { AssetVersionLink } from "./models/halo-infinite/asset-version-link";

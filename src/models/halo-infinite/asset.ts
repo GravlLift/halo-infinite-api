@@ -84,5 +84,11 @@ export interface PlaylistAsset extends Asset {
     MinFireteamSize: number;
     MaxFireteamSize: number;
   };
-  RotationEntries: Asset[]; // TODO: Some sort of map-mode pair asset
+  RotationEntries: (Asset & { Metadata: { Weight: number } })[];
+}
+
+export interface MapModePairAsset extends Asset {
+  CustomData: {};
+  MapLink: Asset;
+  UgcGameVariantLink: Asset;
 }

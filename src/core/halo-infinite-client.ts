@@ -2,6 +2,7 @@ import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
 import {
   MapAsset,
+  MapModePairAsset,
   PlaylistAsset,
   UgcGameVariantAsset,
 } from "../models/halo-infinite/asset";
@@ -40,12 +41,14 @@ export type AssetKindTypeMap = {
   [AssetKind.Map]: MapAsset;
   [AssetKind.UgcGameVariant]: UgcGameVariantAsset;
   [AssetKind.Playlist]: PlaylistAsset;
+  [AssetKind.MapModePair]: MapModePairAsset;
 };
 
 const assetKindUrlMap = {
   [AssetKind.Map]: "Maps",
   [AssetKind.UgcGameVariant]: "UgcGameVariants",
   [AssetKind.Playlist]: "Playlists",
+  [AssetKind.MapModePair]: "MapModePairs",
 } satisfies {
   [key in keyof AssetKindTypeMap]: string;
 };
