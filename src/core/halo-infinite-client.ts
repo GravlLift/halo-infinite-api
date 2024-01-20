@@ -19,6 +19,10 @@ import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 import { RequestError } from "../util/request-error";
 import { MatchesPrivacy } from "src/models/halo-infinite/matches-privacy";
+import {
+  ProgressionFileType,
+  ProgressionFileTypeMap,
+} from "src/models/halo-infinite/progression-file";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -45,10 +49,10 @@ export type AssetKindTypeMap = {
 };
 
 const assetKindUrlMap = {
-  [AssetKind.Map]: "Maps",
-  [AssetKind.UgcGameVariant]: "UgcGameVariants",
-  [AssetKind.Playlist]: "Playlists",
-  [AssetKind.MapModePair]: "MapModePairs",
+  [AssetKind.Map]: "Maps" as const,
+  [AssetKind.UgcGameVariant]: "UgcGameVariants" as const,
+  [AssetKind.Playlist]: "Playlists" as const,
+  [AssetKind.MapModePair]: "MapModePairs" as const,
 } satisfies {
   [key in keyof AssetKindTypeMap]: string;
 };
@@ -203,11 +207,16 @@ export class HaloInfiniteClient {
    * @param gamerTag - Gamertag to lookup.
    */
   public getUserServiceRecord = (
-    gamerTag: string,
+    gamerTagOrWrappedXuid: string,
+    queryParameters?: { seasonId?: string; playlistAssetId?: string },
     init?: Omit<RequestInit, "body" | "method">
   ) =>
     this.executeRequest<ServiceRecord>(
-      `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/players/${gamerTag}/Matchmade/servicerecord`,
+      `https://${HaloCoreEndpoints.StatsOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/players/${gamerTagOrWrappedXuid}/Matchmade/servicerecord?${new URLSearchParams(
+        queryParameters
+      ).toString()}`,
       {
         ...init,
         method: "get",
@@ -253,21 +262,6 @@ export class HaloInfiniteClient {
       }
     );
   };
-
-  public getPlayerServiceRecord(
-    playerXuid: string,
-    init?: Omit<RequestInit, "body" | "method">
-  ) {
-    return this.executeRequest<ServiceRecord>(
-      `https://${HaloCoreEndpoints.StatsOrigin}.${
-        HaloCoreEndpoints.ServiceDomain
-      }/hi/players/${wrapPlayerId(playerXuid)}/Matchmade/servicerecord`,
-      {
-        ...init,
-        method: "get",
-      }
-    );
-  }
 
   public getMatchStats = (
     matchId: string,
@@ -371,4 +365,15 @@ export class HaloInfiniteClient {
       }
     );
   };
+  public getProgressionFile = <TFileType extends ProgressionFileType>(
+    filename: `${TFileType}/${string}.json`,
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<ProgressionFileTypeMap[TFileType]> =>
+    this.executeRequest(
+      `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/Progression/file/${filename}`,
+      {
+        ...init,
+        method: "get",
+      }
+    );
 }

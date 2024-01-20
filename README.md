@@ -9,10 +9,12 @@ The package is currently limited to the endpoints I've needed to use in other pr
 - GET https://profile.svc.halowaypoint.com/users/{gamerTag}
 - GET https://profile.svc.halowaypoint.com/users?xuids={xuids}
 - GET https://skill.svc.halowaypoint.com/hi/playlist/{playlistId}/csrs?players={playerIds}
+- GET https://skill.svc.halowaypoint.com/hi/matches/{matchId}/skill
 - GET https://gamecms-hacs.svc.halowaypoint.com/hi/multiplayer/file/playlists/assets/{playlistId}.json
+- GET https://gamecms-hacs.svc.halowaypoint.com/hi/Progression/file/{filename}.json
 - GET https://halostats.svc.halowaypoint.com/hi/playlist/{playlistId}/csrs?players={playerIds}
 - GET https://halostats.svc.halowaypoint.com/hi/players/xuid({playerId})/matches
-- GET https://skill.svc.halowaypoint.com/hi/matches/{matchId}/skill
+- GET https://halostats.svc.halowaypoint.com/hi/players/{gamerTagOrWrappedXuid}/Matchmade/servicerecord
 - GET https://halostats.svc.halowaypoint.com/hi/matches/{matchId}/stats
 - GET https://discovery-infiniteugc.svc.halowaypoint.com/hi/{assetType}/{assetId}
 - GET https://discovery-infiniteugc.svc.halowaypoint.com/hi/{assetType}/{assetId}/versions/{versionId}
@@ -38,7 +40,7 @@ import { HaloInfiniteClient, AutoXstsSpartanTokenProvider } from "halo-infinite-
 
 const oauthApplication = new msal.PublicClientApplication({
   auth: {
-    clientId: "42081d3d-4465-4c86-89ba-ea546f825335",
+    clientId: "00000000-0000-0000-0000-000000000000",
     authority: "https://login.live.com", // Override the default authority with the xbox one
     knownAuthorities: ["login.live.com"],
     protocolMode: "OIDC", // Shit, I actually have no idea what this does, but Microsoft says I need it
@@ -46,9 +48,9 @@ const oauthApplication = new msal.PublicClientApplication({
 });
 
 const client = new HaloInfiniteClient(
-  // Other choice for token providers is the StaticXstsTicketTokenSpartanTokenProvider,
+  // Another choice for token providers is the StaticXstsTicketTokenSpartanTokenProvider,
   // which uses a preset spartan token
-  new AutoXstsSpartanTokenProvider(async () => {
+  new AutoTokenProvider(async () => {
     const token = await oauthApplication.acquireTokenInteractive({
       // offline_access gives us a refresh token which we can use to continually
       // get new credentials from Microsoft as the old ones expire.

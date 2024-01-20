@@ -20,9 +20,9 @@ export { XboxClient } from "./core/xbox-client";
 export {
   Asset,
   MapAsset,
+  MapModePairAsset,
   PlaylistAsset,
   UgcGameVariantAsset,
-  MapModePairAsset,
 } from "./models/halo-infinite/asset";
 export { AssetKind } from "./models/halo-infinite/asset-kind";
 export { AssetVersionLink } from "./models/halo-infinite/asset-version-link";
@@ -41,9 +41,16 @@ export { Playlist } from "./models/halo-infinite/playlist";
 export { PlaylistCsr } from "./models/halo-infinite/playlist-csr";
 export { PlaylistCsrContainer } from "./models/halo-infinite/playlist-csr-container";
 export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";
+export {
+  SeasonCalendarProgressionFile,
+  CsrSeasonCalendarProgressionFile,
+  ProgressionFileType,
+  ProgressionFileTypeMap,
+  SeasonProgressionFile,
+} from "./models/halo-infinite/progression-file";
 export { ServiceRecord } from "./models/halo-infinite/service-record";
 export { Stats } from "./models/halo-infinite/stats";
 export { UserInfo } from "./models/halo-infinite/user-info";
+export { XboxTicket } from "./models/xbox-ticket";
 export { FetchFunction } from "./util/fetch-function";
 export { RequestError } from "./util/request-error";
-export { XboxTicket } from "./models/xbox-ticket";

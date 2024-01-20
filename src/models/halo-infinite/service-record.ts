@@ -17,7 +17,7 @@ export interface ServiceRecord {
 }
 
 interface Subqueries {
-  SeasonIds: string[];
+  SeasonIds: (`Csr/Seasons/${string}.json` | `Seasons/${string}.json`)[];
   GameVariantCategories: number[];
   IsRanked: boolean[];
   PlaylistAssetIds: string[];
