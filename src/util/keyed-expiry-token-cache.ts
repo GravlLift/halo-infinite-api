@@ -57,7 +57,7 @@ export class KeyedExpiryTokenCache<
 
         if (existingToken?.expiresAt) {
           const expiresAt = coalesceDateTime(existingToken.expiresAt);
-          if (expiresAt && expiresAt > DateTime.now()) {
+          if (expiresAt && expiresAt > DateTime.now().minus({ minute: 1 })) {
             const newToken = { ...existingToken, expiresAt } as TToken;
             tokenFetchPromise.resolve(newToken);
             return newToken;

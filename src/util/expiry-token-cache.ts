@@ -22,7 +22,7 @@ export class ExpiryTokenCache<
       // Wait for them to finish, then check for validity
       const currentToken = await this.tokenFetchPromise;
 
-      if (currentToken.expiresAt > DateTime.now()) {
+      if (currentToken.expiresAt > DateTime.now().minus({ minute: 1 })) {
         // Current token is valid, return it
         return currentToken;
       } else {
