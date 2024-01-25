@@ -18,11 +18,12 @@ import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 import { RequestError } from "../util/request-error";
-import { MatchesPrivacy } from "src/models/halo-infinite/matches-privacy";
+import { MatchesPrivacy } from "../models/halo-infinite/matches-privacy";
 import {
   ProgressionFileType,
   ProgressionFileTypeMap,
-} from "src/models/halo-infinite/progression-file";
+} from "../models/halo-infinite/progression-file";
+import { unauthorizedRetryPolicy } from "./request-policy";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -81,29 +82,32 @@ export class HaloInfiniteClient {
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  private async executeRequest<T>(url: string, init: RequestInit) {
-    const headers = new Headers(init.headers);
-    if (!headers.has("User-Agent")) {
-      headers.set("User-Agent", GlobalConstants.HALO_PC_USER_AGENT);
-    }
-    if (!headers.has("Accept")) {
-      headers.set("Accept", "application/json");
-    }
-    headers.set(
-      "x-343-authorization-spartan",
-      await this.spartanTokenProvider.getSpartanToken()
-    );
+  private executeRequest<T>(url: string, init: RequestInit) {
+    const failureHandler = unauthorizedRetryPolicy.onFailure(() => {});
+    return unauthorizedRetryPolicy.execute(async () => {
+      const headers = new Headers(init.headers);
+      if (!headers.has("User-Agent")) {
+        headers.set("User-Agent", GlobalConstants.HALO_PC_USER_AGENT);
+      }
+      if (!headers.has("Accept")) {
+        headers.set("Accept", "application/json");
+      }
+      headers.set(
+        "x-343-authorization-spartan",
+        await this.spartanTokenProvider.getSpartanToken()
+      );
 
-    const response = await this.fetchFn(url, {
-      ...init,
-      headers,
+      const response = await this.fetchFn(url, {
+        ...init,
+        headers,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return (await response.json()) as T;
+      } else {
+        throw new RequestError(url, response);
+      }
     });
-
-    if (response.status >= 200 && response.status < 300) {
-      return (await response.json()) as T;
-    } else {
-      throw new RequestError(url, response);
-    }
   }
 
   private async executeResultsRequest<T>(

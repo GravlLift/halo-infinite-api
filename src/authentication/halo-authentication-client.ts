@@ -59,11 +59,16 @@ export class HaloAuthenticationClient {
       expiresAt: unknown;
     } | null>,
     private readonly saveToken: (token: Token) => Promise<void>,
+    private readonly clearToken: () => Promise<void>,
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
   public async getSpartanToken() {
     const { token } = await this.spartanTokenCache.getToken();
     return token;
+  }
+
+  public clearSpartanToken() {
+    return this.clearToken();
   }
 }

@@ -78,4 +78,8 @@ export class ExpiryTokenCache<
 
     return null;
   }
+
+  clearToken() {
+    this.tokenFetchPromise = undefined;
+  }
 }

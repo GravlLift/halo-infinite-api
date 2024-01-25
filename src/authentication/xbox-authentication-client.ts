@@ -135,6 +135,10 @@ export class XboxAuthenticationClient {
     return xstsTicket;
   }
 
+  public clearXstsTicket = async (relyingParty: RelyingParty) => {
+    this.xstsTicketCache.clearToken(relyingParty);
+  };
+
   public getXboxLiveV3Token = (xboxTicket: XboxTicket) =>
     `XBL3.0 x=${xboxTicket.DisplayClaims.xui[0].uhs};${xboxTicket.Token}`;
 }

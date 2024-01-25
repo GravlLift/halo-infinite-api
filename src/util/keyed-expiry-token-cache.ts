@@ -87,4 +87,8 @@ export class KeyedExpiryTokenCache<
 
     return null;
   }
+
+  clearToken(key: TKey) {
+    this.tokenFetchPromiseMap.delete(key);
+  }
 }

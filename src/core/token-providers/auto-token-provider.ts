@@ -18,7 +18,9 @@ export class AutoTokenProvider
   implements SpartanTokenProvider, XboxTokenProvider
 {
   public readonly getSpartanToken: () => Promise<string>;
+  public readonly clearSpartanToken: () => Promise<void>;
   public readonly getXboxLiveV3Token: () => Promise<string>;
+  public readonly clearXboxLiveV3Token: () => Promise<void>;
 
   constructor(
     getOauth2AccessToken: () => Promise<string>,
@@ -51,10 +53,15 @@ export class AutoTokenProvider
         const tokenPersister = await tokenPeristerOrPromise;
         await tokenPersister.save("halo.authToken", token);
       },
+      async () => {
+        const tokenPersister = await tokenPeristerOrPromise;
+        await tokenPersister.clear("halo.authToken");
+      },
       fetchFn
     );
 
     this.getSpartanToken = () => haloAuthClient.getSpartanToken();
+    this.clearSpartanToken = () => haloAuthClient.clearSpartanToken();
     this.getXboxLiveV3Token = async () => {
       const xstsTicket = await xboxAuthClient.getXstsTicket(
         getOauth2AccessToken,
@@ -62,5 +69,7 @@ export class AutoTokenProvider
       );
       return xboxAuthClient.getXboxLiveV3Token(xstsTicket);
     };
+    this.clearXboxLiveV3Token = () =>
+      xboxAuthClient.clearXstsTicket(RelyingParty.Xbox);
   }
 }

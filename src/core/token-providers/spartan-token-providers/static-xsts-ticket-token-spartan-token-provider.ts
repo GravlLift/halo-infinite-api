@@ -13,6 +13,7 @@ export class StaticXstsTicketTokenSpartanTokenProvider
   implements SpartanTokenProvider
 {
   public readonly getSpartanToken: () => Promise<string>;
+  public readonly clearSpartanToken: () => Promise<void>;
 
   constructor(
     xstsTicketToken: string,
@@ -31,9 +32,13 @@ export class StaticXstsTicketTokenSpartanTokenProvider
         (await (await actualTokenPersister).load("halo.authToken")) ?? null,
       async (token) => {
         await (await actualTokenPersister).save("halo.authToken", token);
+      },
+      async () => {
+        await (await actualTokenPersister).clear("halo.authToken");
       }
     );
 
     this.getSpartanToken = () => haloAuthClient.getSpartanToken();
+    this.clearSpartanToken = () => haloAuthClient.clearSpartanToken();
   }
 }
