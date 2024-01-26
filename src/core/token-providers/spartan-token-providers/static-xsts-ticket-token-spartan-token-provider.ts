@@ -28,6 +28,11 @@ export class StaticXstsTicketTokenSpartanTokenProvider
 
     const haloAuthClient = new HaloAuthenticationClient(
       () => xstsTicketToken,
+      async () => {
+        console.warn(
+          "StaticXstsTicketTokenSpartanTokenProvider does not clearing xstsTickets"
+        );
+      },
       async () =>
         (await (await actualTokenPersister).load("halo.authToken")) ?? null,
       async (token) => {

@@ -9,4 +9,7 @@ export const inMemoryTokenPersister: TokenPersister = {
   save: (tokenName, token) => {
     tokens.set(tokenName, token);
   },
+  clear: (tokenName) => {
+    tokens.delete(tokenName);
+  },
 };

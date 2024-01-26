@@ -83,31 +83,37 @@ export class HaloInfiniteClient {
   ) {}
 
   private executeRequest<T>(url: string, init: RequestInit) {
-    const failureHandler = unauthorizedRetryPolicy.onFailure(() => {});
-    return unauthorizedRetryPolicy.execute(async () => {
-      const headers = new Headers(init.headers);
-      if (!headers.has("User-Agent")) {
-        headers.set("User-Agent", GlobalConstants.HALO_PC_USER_AGENT);
-      }
-      if (!headers.has("Accept")) {
-        headers.set("Accept", "application/json");
-      }
-      headers.set(
-        "x-343-authorization-spartan",
-        await this.spartanTokenProvider.getSpartanToken()
-      );
+    const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
+      this.spartanTokenProvider.clearSpartanToken()
+    );
+    try {
+      return unauthorizedRetryPolicy.execute(async () => {
+        const headers = new Headers(init.headers);
+        if (!headers.has("User-Agent")) {
+          headers.set("User-Agent", GlobalConstants.HALO_PC_USER_AGENT);
+        }
+        if (!headers.has("Accept")) {
+          headers.set("Accept", "application/json");
+        }
+        headers.set(
+          "x-343-authorization-spartan",
+          await this.spartanTokenProvider.getSpartanToken()
+        );
 
-      const response = await this.fetchFn(url, {
-        ...init,
-        headers,
+        const response = await this.fetchFn(url, {
+          ...init,
+          headers,
+        });
+
+        if (response.status >= 200 && response.status < 300) {
+          return (await response.json()) as T;
+        } else {
+          throw new RequestError(url, response);
+        }
       });
-
-      if (response.status >= 200 && response.status < 300) {
-        return (await response.json()) as T;
-      } else {
-        throw new RequestError(url, response);
-      }
-    });
+    } finally {
+      failureHandler.dispose();
+    }
   }
 
   private async executeResultsRequest<T>(

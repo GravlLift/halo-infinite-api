@@ -5,6 +5,7 @@ import { ExpiryTokenCache } from "../util/expiry-token-cache";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { GlobalConstants } from "../util/global-contants";
 import { RequestError } from "../util/request-error";
+import { unauthorizedRetryPolicy } from "../core/request-policy";
 
 export interface Token {
   token: string;
@@ -14,39 +15,48 @@ export interface Token {
 export class HaloAuthenticationClient {
   private spartanTokenCache = new ExpiryTokenCache(
     async () => {
-      const xstsToken = await this.fetchXstsToken();
+      const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
+        this.clearXstsToken()
+      );
+      try {
+        return await unauthorizedRetryPolicy.execute(async () => {
+          const xstsToken = await this.fetchXstsToken();
 
-      const tokenRequest: SpartanTokenRequest = {
-        Audience: "urn:343:s3:services",
-        MinVersion: "4",
-        Proof: [
-          {
-            Token: xstsToken,
-            TokenType: "Xbox_XSTSv3",
-          },
-        ],
-      };
-      const url = "https://settings.svc.halowaypoint.com/spartan-token";
-      const response = await this.fetchFn(url, {
-        method: "POST",
-        body: JSON.stringify(tokenRequest),
-        headers: {
-          "User-Agent": GlobalConstants.HALO_WAYPOINT_USER_AGENT,
-          "Content-Type": "application/json; charset=utf-8",
-          Accept: "application/json, text/plain, */*",
-        },
-      });
-      if (response.status >= 200 && response.status < 300) {
-        const result = (await response.json()) as SpartanToken;
+          const tokenRequest: SpartanTokenRequest = {
+            Audience: "urn:343:s3:services",
+            MinVersion: "4",
+            Proof: [
+              {
+                Token: xstsToken,
+                TokenType: "Xbox_XSTSv3",
+              },
+            ],
+          };
+          const url = "https://settings.svc.halowaypoint.com/spartan-token";
+          const response = await this.fetchFn(url, {
+            method: "POST",
+            body: JSON.stringify(tokenRequest),
+            headers: {
+              "User-Agent": GlobalConstants.HALO_WAYPOINT_USER_AGENT,
+              "Content-Type": "application/json; charset=utf-8",
+              Accept: "application/json, text/plain, */*",
+            },
+          });
+          if (response.status >= 200 && response.status < 300) {
+            const result_2 = (await response.json()) as SpartanToken;
 
-        const newToken = {
-          token: result.SpartanToken,
-          expiresAt: DateTime.fromISO(result.ExpiresUtc.ISO8601Date),
-        };
-        await this.saveToken(newToken);
-        return newToken;
-      } else {
-        throw new RequestError(url, response);
+            const newToken = {
+              token: result_2.SpartanToken,
+              expiresAt: DateTime.fromISO(result_2.ExpiresUtc.ISO8601Date),
+            };
+            await this.saveToken(newToken);
+            return newToken;
+          } else {
+            throw new RequestError(url, response);
+          }
+        });
+      } finally {
+        failureHandler.dispose();
       }
     },
     () => this.loadToken()
@@ -54,6 +64,7 @@ export class HaloAuthenticationClient {
 
   constructor(
     private readonly fetchXstsToken: () => Promise<string> | string,
+    private readonly clearXstsToken: () => Promise<void>,
     private readonly loadToken: () => Promise<{
       token: string;
       expiresAt: unknown;

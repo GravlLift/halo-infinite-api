@@ -1,6 +1,7 @@
 import { RequestError } from "../util/request-error";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { XboxTokenProvider } from "./token-providers/xbox-token-provider";
+import { unauthorizedRetryPolicy } from "./request-policy";
 
 export class XboxClient {
   constructor(
@@ -8,29 +9,36 @@ export class XboxClient {
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  private async executeRequest<T>(url: string, init: RequestInit) {
-    const headers = new Headers(init.headers);
-    if (!headers.has("Accept")) {
-      headers.set("Accept", "application/json");
-    }
-    if (!headers.has("Authorization")) {
-      headers.set(
-        "Authorization",
-        await this.xboxTokenProvider.getXboxLiveV3Token()
-      );
-    }
-    if (!headers.has("x-xbl-contract-version")) {
-      headers.set("x-xbl-contract-version", "1");
-    }
-    const response = await this.fetchFn(url, {
-      ...init,
-      headers,
-    });
+  private async executeRequest<T>(url: string, init: RequestInit): Promise<T> {
+    const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
+      this.xboxTokenProvider.clearXboxLiveV3Token()
+    );
+    try {
+      const headers = new Headers(init.headers);
+      if (!headers.has("Accept")) {
+        headers.set("Accept", "application/json");
+      }
+      if (!headers.has("Authorization")) {
+        headers.set(
+          "Authorization",
+          await this.xboxTokenProvider.getXboxLiveV3Token()
+        );
+      }
+      if (!headers.has("x-xbl-contract-version")) {
+        headers.set("x-xbl-contract-version", "1");
+      }
+      const response = await this.fetchFn(url, {
+        ...init,
+        headers,
+      });
 
-    if (response.status >= 200 && response.status < 300) {
-      return (await response.json()) as T;
-    } else {
-      throw new RequestError(url, response);
+      if (response.status >= 200 && response.status < 300) {
+        return (await response.json()) as T;
+      } else {
+        throw new RequestError(url, response);
+      }
+    } finally {
+      failureHandler.dispose();
     }
   }
 

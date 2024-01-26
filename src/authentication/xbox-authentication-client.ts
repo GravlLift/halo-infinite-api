@@ -5,6 +5,7 @@ import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { ExpiryTokenCache } from "../util/expiry-token-cache";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { RequestError } from "../util/request-error";
+import { unauthorizedRetryPolicy } from "../core/request-policy";
 
 export enum RelyingParty {
   Xbox = "http://xboxlive.com",
@@ -121,16 +122,28 @@ export class XboxAuthenticationClient {
     if (!xstsTicket) {
       let userToken = await this.userTokenCache.getExistingToken();
       if (!userToken) {
+        const userTokenFailureHandler = unauthorizedRetryPolicy.onFailure(
+          () => {
+            this.userTokenCache.clearToken();
+          }
+        );
         // Ouath2 token depends on nothing, so we can fetch it without
         // worrying if it is expired.
-        userToken = await this.userTokenCache.getToken(
-          await getOauth2AccessToken()
-        );
+        userToken = await unauthorizedRetryPolicy
+          .execute(async () =>
+            this.userTokenCache.getToken(await getOauth2AccessToken())
+          )
+          .finally(() => userTokenFailureHandler.dispose());
       }
-      xstsTicket = await this.xstsTicketCache.getToken(
-        relyingParty,
-        userToken.Token
-      );
+
+      const xstsTicketFailureHandler = unauthorizedRetryPolicy.onFailure(() => {
+        this.xstsTicketCache.clearToken(relyingParty);
+      });
+      xstsTicket = await unauthorizedRetryPolicy
+        .execute(() =>
+          this.xstsTicketCache.getToken(relyingParty, userToken!.Token)
+        )
+        .finally(() => xstsTicketFailureHandler.dispose());
     }
     return xstsTicket;
   }

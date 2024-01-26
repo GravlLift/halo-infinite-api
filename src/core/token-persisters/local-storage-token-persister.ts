@@ -12,4 +12,7 @@ export const localStorageTokenPersister: TokenPersister = {
   save: (tokenName, token) => {
     localStorage.setItem(tokenName, JSON.stringify(token));
   },
+  clear: (tokenName) => {
+    localStorage.removeItem(tokenName);
+  },
 };

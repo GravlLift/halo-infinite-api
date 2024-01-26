@@ -1,5 +1,5 @@
 import { ConstantBackoff, handleWhenResult, retry } from "cockatiel";
-import { RequestError } from "src/util/request-error";
+import { RequestError } from "../util/request-error";
 
 export const unauthorizedRetryPolicy = retry(
   handleWhenResult(

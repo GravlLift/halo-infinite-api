@@ -29,4 +29,10 @@ export const nodeFsTokenPersister: TokenPersister = {
       await import("fs/promises")
     ).writeFile(`${tokenDir}/${tokenName}`, JSON.stringify(token));
   },
+  clear: async (tokenName) => {
+    const tokenDir =
+      process.env.TOKEN_ROOT ||
+      (await import("path")).join(__dirname, "./tokens");
+    await (await import("fs/promises")).unlink(`${tokenDir}/${tokenName}`);
+  },
 };

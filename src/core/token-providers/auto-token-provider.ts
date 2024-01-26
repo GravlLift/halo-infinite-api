@@ -46,6 +46,9 @@ export class AutoTokenProvider
         return xstsTicket.Token;
       },
       async () => {
+        await xboxAuthClient.clearXstsTicket(RelyingParty.Halo);
+      },
+      async () => {
         const tokenPersister = await tokenPeristerOrPromise;
         return await tokenPersister.load("halo.authToken");
       },
