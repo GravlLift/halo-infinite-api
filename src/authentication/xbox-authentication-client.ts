@@ -121,28 +121,17 @@ export class XboxAuthenticationClient {
     let xstsTicket = await this.xstsTicketCache.getExistingToken(relyingParty);
     if (!xstsTicket) {
       let userToken = await this.userTokenCache.getExistingToken();
-      if (!userToken) {
-        const userTokenFailureHandler = unauthorizedRetryPolicy.onFailure(
-          () => {
-            this.userTokenCache.clearToken();
-          }
-        );
-        // Ouath2 token depends on nothing, so we can fetch it without
-        // worrying if it is expired.
-        userToken = await unauthorizedRetryPolicy
-          .execute(async () =>
-            this.userTokenCache.getToken(await getOauth2AccessToken())
-          )
-          .finally(() => userTokenFailureHandler.dispose());
-      }
-
       const xstsTicketFailureHandler = unauthorizedRetryPolicy.onFailure(() => {
-        this.xstsTicketCache.clearToken(relyingParty);
+        this.userTokenCache.clearToken();
       });
       xstsTicket = await unauthorizedRetryPolicy
-        .execute(() =>
-          this.xstsTicketCache.getToken(relyingParty, userToken!.Token)
-        )
+        .execute(async () => {
+          // Ouath2 token depends on nothing, so we can fetch it without
+          // worrying if it is expired.
+          const oauthToken = await getOauth2AccessToken();
+          userToken = await this.userTokenCache.getToken(oauthToken);
+          return this.xstsTicketCache.getToken(relyingParty, userToken!.Token);
+        })
         .finally(() => xstsTicketFailureHandler.dispose());
     }
     return xstsTicket;
