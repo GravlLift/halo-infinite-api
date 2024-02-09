@@ -82,12 +82,12 @@ export class HaloInfiniteClient {
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  private executeRequest<T>(url: string, init: RequestInit) {
+  private async executeRequest<T>(url: string, init: RequestInit) {
     const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
       this.spartanTokenProvider.clearSpartanToken()
     );
     try {
-      return unauthorizedRetryPolicy.execute(async () => {
+      return await unauthorizedRetryPolicy.execute(async () => {
         const headers = new Headers(init.headers);
         if (!headers.has("User-Agent")) {
           headers.set("User-Agent", GlobalConstants.HALO_PC_USER_AGENT);

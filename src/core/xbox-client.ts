@@ -14,29 +14,31 @@ export class XboxClient {
       this.xboxTokenProvider.clearXboxLiveV3Token()
     );
     try {
-      const headers = new Headers(init.headers);
-      if (!headers.has("Accept")) {
-        headers.set("Accept", "application/json");
-      }
-      if (!headers.has("Authorization")) {
-        headers.set(
-          "Authorization",
-          await this.xboxTokenProvider.getXboxLiveV3Token()
-        );
-      }
-      if (!headers.has("x-xbl-contract-version")) {
-        headers.set("x-xbl-contract-version", "1");
-      }
-      const response = await this.fetchFn(url, {
-        ...init,
-        headers,
-      });
+      return await unauthorizedRetryPolicy.execute(async () => {
+        const headers = new Headers(init.headers);
+        if (!headers.has("Accept")) {
+          headers.set("Accept", "application/json");
+        }
+        if (!headers.has("Authorization")) {
+          headers.set(
+            "Authorization",
+            await this.xboxTokenProvider.getXboxLiveV3Token()
+          );
+        }
+        if (!headers.has("x-xbl-contract-version")) {
+          headers.set("x-xbl-contract-version", "1");
+        }
+        const response = await this.fetchFn(url, {
+          ...init,
+          headers,
+        });
 
-      if (response.status >= 200 && response.status < 300) {
-        return (await response.json()) as T;
-      } else {
-        throw new RequestError(url, response);
-      }
+        if (response.status >= 200 && response.status < 300) {
+          return (await response.json()) as T;
+        } else {
+          throw new RequestError(url, response);
+        }
+      });
     } finally {
       failureHandler.dispose();
     }
