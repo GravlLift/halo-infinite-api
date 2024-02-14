@@ -31,10 +31,10 @@ export class ExpiryTokenCache<
 
         try {
           const newToken = await this.generateNewToken(...args);
-          this.tokenFetchPromise.resolve(newToken);
+          this.tokenFetchPromise?.resolve(newToken);
           return newToken;
         } catch (e) {
-          this.tokenFetchPromise.reject(e);
+          this.tokenFetchPromise?.reject(e);
           this.tokenFetchPromise = undefined;
           throw e;
         }
@@ -50,16 +50,16 @@ export class ExpiryTokenCache<
           const expiresAt = coalesceDateTime(existingToken.expiresAt);
           if (expiresAt && expiresAt > DateTime.now()) {
             const newToken = { ...existingToken, expiresAt } as TToken;
-            this.tokenFetchPromise.resolve(newToken);
+            this.tokenFetchPromise?.resolve(newToken);
             return newToken;
           }
         }
 
         const newToken = await this.generateNewToken(...args);
-        this.tokenFetchPromise.resolve(newToken);
+        this.tokenFetchPromise?.resolve(newToken);
         return newToken;
       } catch (e) {
-        this.tokenFetchPromise.reject(e);
+        this.tokenFetchPromise?.reject(e);
         this.tokenFetchPromise = undefined;
         throw e;
       }
