@@ -1,6 +1,5 @@
 import { HaloInfiniteClient } from "./halo-infinite-client";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
-import { ResolvablePromise } from "../util/resolvable-promise";
 describe("Halo Infinite Client", () => {
   it("should retry a request when 401", async () => {
     const spartanTokenProvider: SpartanTokenProvider = {

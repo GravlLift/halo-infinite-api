@@ -5,13 +5,13 @@ export class RequestError extends Error {
     public readonly response: Response
   ) {
     super(
-      `${
+      `${response.status} from ${
         typeof request === "object" && "url" in request
           ? request.url
           : typeof request === "string"
           ? request
           : request.href
-      } ${response.status} ${response.statusText}`
+      }`
     );
     this.url =
       typeof request === "object" && "url" in request
@@ -19,5 +19,6 @@ export class RequestError extends Error {
         : typeof request === "string"
         ? request
         : request.href;
+    this.name = "RequestError";
   }
 }

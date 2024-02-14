@@ -121,10 +121,15 @@ export class XboxAuthenticationClient {
     let xstsTicket = await this.xstsTicketCache.getExistingToken(relyingParty);
     if (!xstsTicket) {
       let userToken = await this.userTokenCache.getExistingToken();
-      const xstsTicketFailureHandler = unauthorizedRetryPolicy.onFailure(() => {
-        this.userTokenCache.clearToken();
-        userToken = null;
-      });
+      const xstsTicketFailureHandler = unauthorizedRetryPolicy.onFailure(
+        async () => {
+          // Clear from memory
+          this.userTokenCache.clearToken();
+          // Clear from storage
+          (await this.tokenPersisterOrPromise)?.clear("xbox.userToken");
+          userToken = null;
+        }
+      );
       xstsTicket = await unauthorizedRetryPolicy
         .execute(async () => {
           if (!userToken) {
@@ -141,7 +146,12 @@ export class XboxAuthenticationClient {
   }
 
   public clearXstsTicket = async (relyingParty: RelyingParty) => {
+    // Clear from memory
     this.xstsTicketCache.clearToken(relyingParty);
+    // Clear from storage
+    (await this.tokenPersisterOrPromise)?.clear(
+      "xbox.xstsTicket." + relyingParty
+    );
   };
 
   public getXboxLiveV3Token = (xboxTicket: XboxTicket) =>

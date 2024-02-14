@@ -79,7 +79,10 @@ export class HaloAuthenticationClient {
     return token;
   }
 
-  public clearSpartanToken() {
-    return this.clearToken();
+  public async clearSpartanToken() {
+    // Clear from memory
+    this.spartanTokenCache.clearToken();
+    // Clear from storage
+    await this.clearToken();
   }
 }
