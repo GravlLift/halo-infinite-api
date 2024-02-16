@@ -27,21 +27,25 @@ export class ExpiryTokenCache<
         return currentToken;
       } else {
         // Current token expired, start a new promise
-        this.tokenFetchPromise = new ResolvablePromise<TToken>();
+        const newPromise = new ResolvablePromise<TToken>();
+        this.tokenFetchPromise = newPromise;
 
         try {
           const newToken = await this.generateNewToken(...args);
-          this.tokenFetchPromise?.resolve(newToken);
+          newPromise.resolve(newToken);
           return newToken;
         } catch (e) {
-          this.tokenFetchPromise?.reject(e);
-          this.tokenFetchPromise = undefined;
+          newPromise.reject(e);
+          if (this.tokenFetchPromise === newPromise) {
+            this.tokenFetchPromise = undefined;
+          }
           throw e;
         }
       }
     } else {
       // No one has a token, start a new promise
-      this.tokenFetchPromise = new ResolvablePromise<TToken>();
+      const newPromise = new ResolvablePromise<TToken>();
+      this.tokenFetchPromise = newPromise;
 
       try {
         const existingToken = await this.getExistingToken();
@@ -50,17 +54,19 @@ export class ExpiryTokenCache<
           const expiresAt = coalesceDateTime(existingToken.expiresAt);
           if (expiresAt && expiresAt > DateTime.now()) {
             const newToken = { ...existingToken, expiresAt } as TToken;
-            this.tokenFetchPromise?.resolve(newToken);
+            newPromise.resolve(newToken);
             return newToken;
           }
         }
 
         const newToken = await this.generateNewToken(...args);
-        this.tokenFetchPromise?.resolve(newToken);
+        newPromise.resolve(newToken);
         return newToken;
       } catch (e) {
-        this.tokenFetchPromise?.reject(e);
-        this.tokenFetchPromise = undefined;
+        newPromise.reject(e);
+        if (this.tokenFetchPromise === newPromise) {
+          this.tokenFetchPromise = undefined;
+        }
         throw e;
       }
     }
