@@ -76,24 +76,68 @@ export interface StockpileStats {
   TimeAsPowerSeedDriver: string;
 }
 
+export interface PvpStats {
+  Kills: number;
+  Deaths: number;
+  Assists: number;
+  KDA: number;
+}
+
+export interface PveStats {
+  Kills: number;
+  Deaths: number;
+  Assists: number;
+  KDA: number;
+  MarineKills: number;
+  GruntKills: number;
+  JackalKills: number;
+  EliteKills: number;
+  BruteKills: number;
+  HunterKills: number;
+  SkimmerKills: number;
+  SentinelKills: number;
+  BossKills: number;
+}
+
 type StatsMap = {
-  [GameVariantCategory.MultiplayerOddball]: { OddballStats: OddballStats };
-  [GameVariantCategory.MultiplayerStrongholds]: { ZonesStats: ZonesStats };
+  [GameVariantCategory.MultiplayerOddball]: {
+    OddballStats: OddballStats;
+    PvpStats: PvpStats;
+  };
+  [GameVariantCategory.MultiplayerStrongholds]: {
+    ZonesStats: ZonesStats;
+    PvpStats: PvpStats;
+  };
   [GameVariantCategory.MultiplayerCtf]: {
     CaptureTheFlagStats: CaptureTheFlagStats;
+    PvpStats: PvpStats;
   };
-  [GameVariantCategory.MultiplayerKingOfTheHill]: { ZonesStats: ZonesStats };
+  [GameVariantCategory.MultiplayerKingOfTheHill]: {
+    ZonesStats: ZonesStats;
+    PvpStats: PvpStats;
+  };
   [GameVariantCategory.MultiplayerExtraction]: {
     ExtractionStats: ExtractionStats;
+    PvpStats: PvpStats;
   };
   [GameVariantCategory.MultiplayerFirefight]: {
     EliminationStats: EliminationStats;
+    PveStats: PveStats;
   };
   [GameVariantCategory.MultiplayerInfection]: {
     InfectionSTats: InfectionStats;
+    PvpStats: PvpStats;
   };
   [GameVariantCategory.MultiplayerStockpile]: {
     StockpileStats: StockpileStats;
+    PvpStats: PvpStats;
+  };
+  [GameVariantCategory.MultiplayerElimination]: {
+    EliminationStats: EliminationStats;
+    PvpStats: PvpStats;
+  };
+  [GameVariantCategory.MultiplayerMinigame]: {
+    PvpStats: PvpStats;
   };
 };
 
