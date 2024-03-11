@@ -83,8 +83,12 @@ export class HaloInfiniteClient {
   ) {}
 
   private async executeRequest<T>(url: string, init: RequestInit) {
-    const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
-      this.spartanTokenProvider.clearSpartanToken()
+    const failureHandler = unauthorizedRetryPolicy.onFailure(
+      async ({ handled }) => {
+        if (handled) {
+          await this.spartanTokenProvider.clearSpartanToken();
+        }
+      }
     );
     try {
       return await unauthorizedRetryPolicy.execute(async () => {

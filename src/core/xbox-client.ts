@@ -10,8 +10,12 @@ export class XboxClient {
   ) {}
 
   private async executeRequest<T>(url: string, init: RequestInit): Promise<T> {
-    const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
-      this.xboxTokenProvider.clearXboxLiveV3Token()
+    const failureHandler = unauthorizedRetryPolicy.onFailure(
+      async ({ handled }) => {
+        if (handled) {
+          await this.xboxTokenProvider.clearXboxLiveV3Token();
+        }
+      }
     );
     try {
       return await unauthorizedRetryPolicy.execute(async () => {

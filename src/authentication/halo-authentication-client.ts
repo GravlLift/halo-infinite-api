@@ -6,6 +6,7 @@ import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { GlobalConstants } from "../util/global-contants";
 import { RequestError } from "../util/request-error";
 import { unauthorizedRetryPolicy } from "../core/request-policy";
+import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
 
 export interface Token {
   token: string;
@@ -15,8 +16,12 @@ export interface Token {
 export class HaloAuthenticationClient {
   private spartanTokenCache = new ExpiryTokenCache(
     async () => {
-      const failureHandler = unauthorizedRetryPolicy.onFailure(() =>
-        this.clearXstsToken()
+      const failureHandler = unauthorizedRetryPolicy.onFailure(
+        async ({ handled }) => {
+          if (handled) {
+            await this.clearXstsToken();
+          }
+        }
       );
       try {
         return await unauthorizedRetryPolicy.execute(async () => {
@@ -32,7 +37,7 @@ export class HaloAuthenticationClient {
               },
             ],
           };
-          const url = "https://settings.svc.halowaypoint.com/spartan-token";
+          const url = HaloCoreEndpoints.SpartanTokenEndpoint;
           const response = await this.fetchFn(url, {
             method: "POST",
             body: JSON.stringify(tokenRequest),

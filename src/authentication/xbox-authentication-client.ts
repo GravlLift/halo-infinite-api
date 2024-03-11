@@ -122,12 +122,14 @@ export class XboxAuthenticationClient {
     if (!xstsTicket) {
       let userToken = await this.userTokenCache.getExistingToken();
       const xstsTicketFailureHandler = unauthorizedRetryPolicy.onFailure(
-        async () => {
-          // Clear from memory
-          this.userTokenCache.clearToken();
-          // Clear from storage
-          (await this.tokenPersisterOrPromise)?.clear("xbox.userToken");
-          userToken = null;
+        async ({ handled }) => {
+          if (handled) {
+            // Clear from memory
+            this.userTokenCache.clearToken();
+            // Clear from storage
+            await (await this.tokenPersisterOrPromise)?.clear("xbox.userToken");
+            userToken = null;
+          }
         }
       );
       xstsTicket = await unauthorizedRetryPolicy
