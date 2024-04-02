@@ -13,9 +13,9 @@ interface Counterfactual {
 
 export interface MatchSkill<TResult extends 1 | 0 = 0> {
   TeamId: number;
-  TeamMmr: number;
+  TeamMmr: number | "Infinity";
   TeamMmrs: {
-    [key: number]: number;
+    [key: number]: number | "Infinity";
   };
   RankRecap: {
     PreMatchCsr: PlaylistCsr;
