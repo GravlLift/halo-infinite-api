@@ -130,11 +130,14 @@ export class HaloInfiniteClient {
       );
     } catch (e) {
       if (e instanceof RequestError && e.response.status === 404) {
-        // 404s if even one of the xuids is invalid
-        resultsContainer = (await e.response.json()) as ResultsContainer<T>;
-      } else {
-        throw e;
+        const contentLength = e.response.headers.get("Content-Length");
+        if (contentLength && parseInt(contentLength) > 0) {
+          // 404s if even one of the xuids is invalid
+          resultsContainer = (await e.response.json()) as ResultsContainer<T>;
+        }
       }
+
+      throw e;
     }
     return resultsContainer.Value;
   }

@@ -52,23 +52,21 @@ export class XboxClient {
     query: string,
     init?: Omit<RequestInit, "body" | "method">
   ) {
-    const { results } = await this.executeRequest<{
-      results: [
+    const { people } = await this.executeRequest<{
+      people: [
         {
-          result: {
-            id: string;
-            gamertag: string;
-            displayPicUri: string;
-            score: number;
-          };
-          text: string;
+          xuid: string;
+          gamertag: string;
+          displayPicRaw: string;
         }
       ];
     }>(
-      `https://usersearch.xboxlive.com/suggest?q=${encodeURIComponent(query)}`,
+      `https://peoplehub.xboxlive.com/users/me/people/search?q=${encodeURIComponent(
+        query
+      )}&maxItems=5`,
       { ...init, method: "GET" }
     );
-    return results.map(({ result }) => result);
+    return people;
   }
 
   public async recentPlayers(init?: Omit<RequestInit, "body" | "method">) {
