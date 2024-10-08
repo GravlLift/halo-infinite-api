@@ -30,7 +30,7 @@ export class XboxClient {
           );
         }
         if (!headers.has("x-xbl-contract-version")) {
-          headers.set("x-xbl-contract-version", "1");
+          headers.set("x-xbl-contract-version", "3");
         }
         const response = await this.fetchFn(url, {
           ...init,
