@@ -76,6 +76,16 @@ export interface StockpileStats {
   TimeAsPowerSeedDriver: string;
 }
 
+export interface VIPStats {
+  VipKills: number;
+  VipAssists: number;
+  KillsAsVip: number;
+  TimesSelectedAsVip: number;
+  MaxKillingSpreeAsVip: number;
+  LongestTimeAsVip: string;
+  TimeAsVip: string;
+}
+
 export interface PvpStats {
   Kills: number;
   Deaths: number;
@@ -126,6 +136,10 @@ type StatsMap = {
   };
   [GameVariantCategory.MultiplayerInfection]: {
     InfectionSTats: InfectionStats;
+    PvpStats: PvpStats;
+  };
+  [GameVariantCategory.MultiplayerVIP]: {
+    VipStats: VIPStats;
     PvpStats: PvpStats;
   };
   [GameVariantCategory.MultiplayerStockpile]: {
