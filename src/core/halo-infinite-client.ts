@@ -24,6 +24,7 @@ import {
   ProgressionFileTypeMap,
 } from "../models/halo-infinite/progression-file";
 import { unauthorizedRetryPolicy } from "./request-policy";
+import { MedalsMetadataFile } from "src/models/halo-infinite/medals-metadata-file";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -382,6 +383,7 @@ export class HaloInfiniteClient {
       }
     );
   };
+
   public getProgressionFile = <TFileType extends ProgressionFileType>(
     filename: `${TFileType}/${string}.json`,
     init?: Omit<RequestInit, "body" | "method">
@@ -393,4 +395,14 @@ export class HaloInfiniteClient {
         method: "get",
       }
     );
+
+  public getMedalsMetadataFile = (
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<MedalsMetadataFile> => this.executeRequest(
+    `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/Waypoint/file/medals/metadata.json`,
+    {
+      ...init,
+      method: "get",
+    }
+  );
 }
