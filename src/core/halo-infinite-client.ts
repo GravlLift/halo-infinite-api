@@ -19,6 +19,7 @@ import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 import { RequestError } from "../util/request-error";
 import { MatchesPrivacy } from "../models/halo-infinite/matches-privacy";
+import { MedalsMetadataFile } from "../models/halo-infinite/medals-metadata-file";
 import {
   ProgressionFileType,
   ProgressionFileTypeMap,
@@ -382,6 +383,7 @@ export class HaloInfiniteClient {
       }
     );
   };
+
   public getProgressionFile = <TFileType extends ProgressionFileType>(
     filename: `${TFileType}/${string}.json`,
     init?: Omit<RequestInit, "body" | "method">
@@ -393,4 +395,14 @@ export class HaloInfiniteClient {
         method: "get",
       }
     );
+
+  public getMedalsMetadataFile = (
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<MedalsMetadataFile> => this.executeRequest(
+    `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/Waypoint/file/medals/metadata.json`,
+    {
+      ...init,
+      method: "get",
+    }
+  );
 }
