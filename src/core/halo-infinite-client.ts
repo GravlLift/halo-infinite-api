@@ -19,12 +19,12 @@ import { GlobalConstants } from "../util/global-contants";
 import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 import { RequestError } from "../util/request-error";
 import { MatchesPrivacy } from "../models/halo-infinite/matches-privacy";
+import { MedalsMetadataFile } from "../models/halo-infinite/medals-metadata-file";
 import {
   ProgressionFileType,
   ProgressionFileTypeMap,
 } from "../models/halo-infinite/progression-file";
 import { unauthorizedRetryPolicy } from "./request-policy";
-import { MedalsMetadataFile } from "src/models/halo-infinite/medals-metadata-file";
 
 export interface ResultContainer<TValue> {
   Id: string;
