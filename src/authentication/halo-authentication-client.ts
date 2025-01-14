@@ -37,7 +37,7 @@ export class HaloAuthenticationClient {
               },
             ],
           };
-          const url = HaloCoreEndpoints.SpartanTokenEndpoint;
+          const url = `https://${HaloCoreEndpoints.SettingsOrigin}.${HaloCoreEndpoints.ServiceDomain}/spartan-token`;
           const response = await this.fetchFn(url, {
             method: "POST",
             body: JSON.stringify(tokenRequest),
