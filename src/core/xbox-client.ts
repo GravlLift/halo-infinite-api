@@ -2,6 +2,7 @@ import { RequestError } from "../util/request-error";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { XboxTokenProvider } from "./token-providers/xbox-token-provider";
 import { unauthorizedRetryPolicy } from "./request-policy";
+import { unwrapPlayerId } from "../util/xuid";
 
 export class XboxClient {
   constructor(
@@ -74,5 +75,30 @@ export class XboxClient {
       "https://peoplehub.xboxlive.com/users/me/people/recentplayers",
       { ...init, method: "GET" }
     );
+  }
+
+  public async getProfiles(
+    xuids: string[],
+    settings: string[],
+    init?: Omit<RequestInit, "body" | "method">
+  ) {
+    init?.headers;
+    return await this.executeRequest<{
+      profileUsers: {
+        id: string;
+        settings: { id: string; value: string }[];
+      }[];
+    }>("https://profile.xboxlive.com/users/batch/profile/settings", {
+      ...init,
+      headers: {
+        ...init?.headers,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        userIds: xuids.map(unwrapPlayerId),
+        settings,
+      }),
+    });
   }
 }

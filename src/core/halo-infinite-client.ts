@@ -28,6 +28,7 @@ import { unauthorizedRetryPolicy } from "./request-policy";
 import { BanSummary } from "../models/halo-infinite/ban-summary";
 import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { DateTime } from "luxon";
+import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -61,25 +62,6 @@ const assetKindUrlMap = {
 } satisfies {
   [key in keyof AssetKindTypeMap]: string;
 };
-
-function wrapPlayerId(playerId: string) {
-  if (/^\w+\(\d+\)/.test(playerId)) {
-    return playerId;
-  } else {
-    // Assume xuid
-    return `xuid(${playerId})`;
-  }
-}
-
-function unwrapPlayerId(playerId: string) {
-  const match = /^\w+\((\d+)\)$/.exec(playerId);
-  if (match) {
-    return match[1];
-  } else {
-    return playerId;
-  }
-}
-
 export class HaloInfiniteClient {
   private clearanceMap = new Map<
     string,
