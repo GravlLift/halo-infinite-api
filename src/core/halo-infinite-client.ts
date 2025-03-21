@@ -29,6 +29,7 @@ import { BanSummary } from "../models/halo-infinite/ban-summary";
 import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { DateTime } from "luxon";
 import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
+import { SeasonCalendarContainer } from "src/models/halo-infinite/season";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -199,7 +200,7 @@ export class HaloInfiniteClient {
       players: playerIds.map(wrapPlayerId).join(","),
     });
     if (seasonId) {
-      urlParams.set("seasonId", seasonId);
+      urlParams.set("season", seasonId);
     }
     return this.executeResultsRequest<PlaylistCsrContainer>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/playlist/${playlistId}/csrs?${urlParams}`,
@@ -449,6 +450,17 @@ export class HaloInfiniteClient {
       `https://${HaloCoreEndpoints.BanProcessorOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/bansummary?targets={${xuids.map(wrapPlayerId).join(",")}}`,
+      {
+        ...init,
+        method: "get",
+      }
+    );
+
+  public getSeasonCalendar = (
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<SeasonCalendarContainer> =>
+    this.executeJsonRequest(
+      `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/progression/file/calendars/seasons/seasoncalendar.json`,
       {
         ...init,
         method: "get",
