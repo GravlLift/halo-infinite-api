@@ -29,7 +29,7 @@ import { BanSummary } from "../models/halo-infinite/ban-summary";
 import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { DateTime } from "luxon";
 import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
-import { SeasonCalendarContainer } from "src/models/halo-infinite/season";
+import { SeasonCalendarContainer } from "../models/halo-infinite/season";
 
 export interface ResultContainer<TValue> {
   Id: string;
