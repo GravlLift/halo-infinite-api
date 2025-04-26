@@ -51,6 +51,7 @@ export class XboxClient {
 
   public async searchUsers(
     query: string,
+    maxItems: number = 5,
     init?: Omit<RequestInit, "body" | "method">
   ) {
     const { people } = await this.executeRequest<{
@@ -64,7 +65,7 @@ export class XboxClient {
     }>(
       `https://peoplehub.xboxlive.com/users/me/people/search?q=${encodeURIComponent(
         query
-      )}&maxItems=5`,
+      )}&maxItems=${maxItems}`,
       { ...init, method: "GET" }
     );
     return people;
