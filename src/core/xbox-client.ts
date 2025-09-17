@@ -49,6 +49,22 @@ export class XboxClient {
     }
   }
 
+  public async getCurrentUser(init?: Omit<RequestInit, "body" | "method">) {
+    return await this.executeRequest<{
+      xuid: string;
+      gamertag: string;
+      gamerpic: {
+        small: string;
+        medium: string;
+        large: string;
+        xlarge: string;
+      };
+    }>("https://profile.svc.halowaypoint.com/users/me", {
+      ...init,
+      method: "GET",
+    });
+  }
+
   public async searchUsers(
     query: string,
     maxItems: number = 5,
