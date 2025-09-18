@@ -376,18 +376,9 @@ export class HaloInfiniteClient {
 
   public getCurrentUser = (
     init?: Omit<RequestInit, "body" | "method">
-  ): Promise<{
-    xuid: string;
-    gamertag: string;
-    gamerpic: {
-      small: string;
-      medium: string;
-      large: string;
-      xlarge: string;
-    };
-  }> =>
+  ): Promise<{ xuid: string; notificationsReadDate: string }> =>
     this.executeJsonRequest(
-      `https://${HaloCoreEndpoints.Profile}.${HaloCoreEndpoints.ServiceDomain}/users/me`,
+      `https://${HaloCoreEndpoints.CommsOrigin}.${HaloCoreEndpoints.ServiceDomain}/users/me`,
       {
         ...init,
         method: "get",
