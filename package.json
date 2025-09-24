@@ -22,7 +22,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.app.json && node scripts/build-cjs.cjs",
+    "build": "tsup",
     "prepack": "npm run build",
     "test": "jest"
   },
@@ -48,6 +48,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.1",
+    "tsup": "^8.5.0",
     "typescript": "^5.3.3",
     "yargs": "^17.7.1"
   },
