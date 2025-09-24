@@ -1,14 +1,30 @@
 {
   "name": "halo-infinite-api",
-  "version": "11.0.0",
+  "version": "12.0.0",
   "description": "An NPM package for accessing the official Halo Infinite API.",
+  "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./token-persisters": "./dist/core/token-persisters/index.js"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./token-persisters": {
+      "import": "./dist/core/token-persisters/index.js",
+      "require": "./dist/core/token-persisters/index.cjs",
+      "types": "./dist/core/token-persisters/index.d.ts"
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "scripts": {
-    "prepack": "tsc --project tsconfig.app.json"
+    "build": "tsc --project tsconfig.app.json && node scripts/build-cjs.cjs",
+    "prepack": "npm run build",
+    "test": "jest"
   },
   "repository": {
     "type": "git",

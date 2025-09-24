@@ -1,4 +1,4 @@
-import type { TokenPersister } from ".";
+import type { TokenPersister } from "./token-persister.js";
 
 export const nodeFsTokenPersister: TokenPersister = {
   load: async (tokenName) => {

@@ -1,4 +1,4 @@
-import { ApiFormattedDate } from "./api-formatted-date";
+import { ApiFormattedDate } from "./api-formatted-date.js";
 
 export enum ProgressionFileType {
   Seasons = "Seasons",

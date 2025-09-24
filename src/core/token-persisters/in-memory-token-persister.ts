@@ -1,4 +1,4 @@
-import { TokenPersister } from ".";
+import { TokenPersister } from "./token-persister.js";
 
 const tokens = new Map<string, any>();
 

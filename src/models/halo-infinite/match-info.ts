@@ -1,6 +1,6 @@
-import { AssetVersionLink } from "./asset-version-link";
-import { GameVariantCategory } from "./game-variant-category";
-import { PlaylistExperience } from "./playlist-experience";
+import { AssetVersionLink } from "./asset-version-link.js";
+import { GameVariantCategory } from "./game-variant-category.js";
+import { PlaylistExperience } from "./playlist-experience.js";
 export interface MatchInfo<
   TCategory extends GameVariantCategory = GameVariantCategory,
   TResult extends 1 | 0 = 0

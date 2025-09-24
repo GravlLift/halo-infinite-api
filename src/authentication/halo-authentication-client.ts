@@ -1,12 +1,12 @@
 import { DateTime } from "luxon";
-import type { SpartanToken } from "../models/spartan-token";
-import type { SpartanTokenRequest } from "../models/spartan-token-request";
-import { ExpiryTokenCache } from "../util/expiry-token-cache";
-import { FetchFunction, defaultFetch } from "../util/fetch-function";
-import { GlobalConstants } from "../util/global-contants";
-import { RequestError } from "../util/request-error";
-import { unauthorizedRetryPolicy } from "../core/request-policy";
-import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
+import type { SpartanToken } from "../models/spartan-token.js";
+import type { SpartanTokenRequest } from "../models/spartan-token-request.js";
+import { ExpiryTokenCache } from "../util/expiry-token-cache.js";
+import { FetchFunction, defaultFetch } from "../util/fetch-function.js";
+import { GlobalConstants } from "../util/global-contants.js";
+import { RequestError } from "../util/request-error.js";
+import { unauthorizedRetryPolicy } from "../core/request-policy.js";
+import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints.js";
 
 export interface Token {
   token: string;

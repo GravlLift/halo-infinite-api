@@ -1,4 +1,4 @@
-import { GameVariantCategory } from "./game-variant-category";
+import { GameVariantCategory } from "./game-variant-category.js";
 
 export interface OddballStats {
   KillsAsSkullCarrier: number;
