@@ -1,8 +1,8 @@
-import { RequestError } from "../util/request-error";
-import { FetchFunction, defaultFetch } from "../util/fetch-function";
-import { XboxTokenProvider } from "./token-providers/xbox-token-provider";
-import { unauthorizedRetryPolicy } from "./request-policy";
-import { unwrapPlayerId } from "../util/xuid";
+import { RequestError } from "../util/request-error.js";
+import { FetchFunction, defaultFetch } from "../util/fetch-function.js";
+import { XboxTokenProvider } from "./token-providers/xbox-token-provider.js";
+import { unauthorizedRetryPolicy } from "./request-policy.js";
+import { unwrapPlayerId } from "../util/xuid.js";
 
 export class XboxClient {
   constructor(

@@ -1,5 +1,5 @@
 import { handleType, retry } from "cockatiel";
-import { RequestError } from "../util/request-error";
+import { RequestError } from "../util/request-error.js";
 
 export const unauthorizedRetryPolicy = retry(
   handleType(RequestError, (error) => error.response.status === 401),

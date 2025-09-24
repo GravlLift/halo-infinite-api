@@ -1,7 +1,7 @@
-import { TokenPersister } from "../../token-persisters";
-import { HaloAuthenticationClient } from "../../../authentication/halo-authentication-client";
-import { SpartanTokenProvider } from ".";
-import { inMemoryTokenPersister } from "../../token-persisters/in-memory-token-persister";
+import { TokenPersister } from "../../token-persisters/index.js";
+import { HaloAuthenticationClient } from "../../../authentication/halo-authentication-client.js";
+import { SpartanTokenProvider } from "./index.js";
+import { inMemoryTokenPersister } from "../../token-persisters/in-memory-token-persister.js";
 
 /**
  * A SpartanTokenProvider that fetches uses a pre-fetched XSTS ticket token.

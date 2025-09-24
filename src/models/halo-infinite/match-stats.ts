@@ -1,7 +1,7 @@
-import { GameVariantCategory } from "./game-variant-category";
-import { MatchInfo } from "./match-info";
-import { MatchOutcome } from "./match-outcome";
-import { Stats } from "./stats";
+import { GameVariantCategory } from "./game-variant-category.js";
+import { MatchInfo } from "./match-info.js";
+import { MatchOutcome } from "./match-outcome.js";
+import { Stats } from "./stats.js";
 
 export interface MatchStats<
   TCategory extends GameVariantCategory = GameVariantCategory

@@ -1,4 +1,4 @@
-import { PlaylistCsr } from "./playlist-csr";
+import { PlaylistCsr } from "./playlist-csr.js";
 
 export interface PlaylistCsrContainer {
   Current: PlaylistCsr;

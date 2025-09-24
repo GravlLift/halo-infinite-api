@@ -1,4 +1,4 @@
-export { TokenPersister } from "./token-persister";
-export { localStorageTokenPersister } from "./local-storage-token-persister";
-export { nodeFsTokenPersister } from "./node-fs-token-persister";
-export { inMemoryTokenPersister } from "./in-memory-token-persister";
+export { TokenPersister } from "./token-persister.js";
+export { localStorageTokenPersister } from "./local-storage-token-persister.js";
+export { nodeFsTokenPersister } from "./node-fs-token-persister.js";
+export { inMemoryTokenPersister } from "./in-memory-token-persister.js";

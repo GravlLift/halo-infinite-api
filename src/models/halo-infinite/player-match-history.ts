@@ -1,5 +1,5 @@
-import { MatchInfo } from "./match-info";
-import { MatchOutcome } from "./match-outcome";
+import { MatchInfo } from "./match-info.js";
+import { MatchOutcome } from "./match-outcome.js";
 
 export interface PlayerMatchHistory {
   MatchId: string;
