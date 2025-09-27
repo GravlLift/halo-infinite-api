@@ -1,4 +1,4 @@
-import { ApiFormattedDate } from "./halo-infinite/api-formatted-date.js";
+import { ApiFormattedDate } from "./halo-infinite/api-formatted-date";
 
 export interface SpartanToken {
   SpartanToken: string;

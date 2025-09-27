@@ -1,4 +1,4 @@
-import { TokenPersister } from "./token-persister.js";
+import { TokenPersister } from ".";
 
 export const localStorageTokenPersister: TokenPersister = {
   load: (tokenName) => {

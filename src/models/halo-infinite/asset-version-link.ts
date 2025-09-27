@@ -1,4 +1,4 @@
-import { AssetKind } from "./asset-kind.js";
+import { AssetKind } from "./asset-kind";
 
 export interface AssetVersionLink {
   AssetKind: AssetKind;

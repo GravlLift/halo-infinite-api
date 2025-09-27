@@ -1,11 +1,11 @@
 import { DateTime } from "luxon";
-import { TokenPersister } from "../core/token-persisters/index.js";
-import { XboxTicket } from "../models/xbox-ticket.js";
-import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache.js";
-import { ExpiryTokenCache } from "../util/expiry-token-cache.js";
-import { FetchFunction, defaultFetch } from "../util/fetch-function.js";
-import { RequestError } from "../util/request-error.js";
-import { unauthorizedRetryPolicy } from "../core/request-policy.js";
+import { TokenPersister } from "../core/token-persisters";
+import { XboxTicket } from "../models/xbox-ticket";
+import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
+import { ExpiryTokenCache } from "../util/expiry-token-cache";
+import { FetchFunction, defaultFetch } from "../util/fetch-function";
+import { RequestError } from "../util/request-error";
+import { unauthorizedRetryPolicy } from "../core/request-policy";
 
 export enum RelyingParty {
   Xbox = "http://xboxlive.com",

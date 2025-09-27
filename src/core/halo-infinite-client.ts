@@ -1,35 +1,35 @@
-import { FetchFunction, defaultFetch } from "../util/fetch-function.js";
-import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints.js";
+import { FetchFunction, defaultFetch } from "../util/fetch-function";
+import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
 import {
   MapAsset,
   MapModePairAsset,
   PlaylistAsset,
   UgcGameVariantAsset,
-} from "../models/halo-infinite/asset.js";
-import { AssetKind } from "../models/halo-infinite/asset-kind.js";
-import { MatchSkill } from "../models/halo-infinite/match-skill.js";
-import { MatchStats } from "../models/halo-infinite/match-stats.js";
-import { MatchType } from "../models/halo-infinite/match-type.js";
-import { PlayerMatchHistory } from "../models/halo-infinite/player-match-history.js";
-import { Playlist } from "../models/halo-infinite/playlist.js";
-import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-container.js";
-import { ServiceRecord } from "../models/halo-infinite/service-record.js";
-import { UserInfo } from "../models/halo-infinite/user-info.js";
-import { GlobalConstants } from "../util/global-contants.js";
-import { SpartanTokenProvider } from "./token-providers/spartan-token-providers/index.js";
-import { RequestError } from "../util/request-error.js";
-import { MatchesPrivacy } from "../models/halo-infinite/matches-privacy.js";
-import { MedalsMetadataFile } from "../models/halo-infinite/medals-metadata-file.js";
+} from "../models/halo-infinite/asset";
+import { AssetKind } from "../models/halo-infinite/asset-kind";
+import { MatchSkill } from "../models/halo-infinite/match-skill";
+import { MatchStats } from "../models/halo-infinite/match-stats";
+import { MatchType } from "../models/halo-infinite/match-type";
+import { PlayerMatchHistory } from "../models/halo-infinite/player-match-history";
+import { Playlist } from "../models/halo-infinite/playlist";
+import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-container";
+import { ServiceRecord } from "../models/halo-infinite/service-record";
+import { UserInfo } from "../models/halo-infinite/user-info";
+import { GlobalConstants } from "../util/global-contants";
+import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
+import { RequestError } from "../util/request-error";
+import { MatchesPrivacy } from "../models/halo-infinite/matches-privacy";
+import { MedalsMetadataFile } from "../models/halo-infinite/medals-metadata-file";
 import {
   ProgressionFileType,
   ProgressionFileTypeMap,
-} from "../models/halo-infinite/progression-file.js";
-import { unauthorizedRetryPolicy } from "./request-policy.js";
-import { BanSummary } from "../models/halo-infinite/ban-summary.js";
-import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache.js";
+} from "../models/halo-infinite/progression-file";
+import { unauthorizedRetryPolicy } from "./request-policy";
+import { BanSummary } from "../models/halo-infinite/ban-summary";
+import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { DateTime } from "luxon";
-import { wrapPlayerId, unwrapPlayerId } from "../util/xuid.js";
-import { SeasonCalendarContainer } from "../models/halo-infinite/season.js";
+import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
+import { SeasonCalendarContainer } from "../models/halo-infinite/season";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -130,7 +130,7 @@ export class HaloInfiniteClient {
           headers,
         });
 
-        if (response.status === 401) {
+        if (!response.ok && response.status === 401) {
           throw new RequestError(url, response);
         }
 

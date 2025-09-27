@@ -1,13 +1,13 @@
 import {
   RelyingParty,
   XboxAuthenticationClient,
-} from "../../authentication/xbox-authentication-client.js";
-import { TokenPersister } from "../token-persisters/index.js";
-import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client.js";
-import { SpartanTokenProvider } from "./spartan-token-providers/index.js";
-import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister.js";
-import { XboxTokenProvider } from "./xbox-token-provider.js";
-import type { FetchFunction } from "../../util/fetch-function.js";
+} from "../../authentication/xbox-authentication-client";
+import { TokenPersister } from "../token-persisters";
+import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
+import { SpartanTokenProvider } from "./spartan-token-providers";
+import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
+import { XboxTokenProvider } from "./xbox-token-provider";
+import type { FetchFunction } from "../../util/fetch-function";
 
 /**
  * A SpartanTokenProvider that fetches both the Xbox and Halo tokens in the same

@@ -1,5 +1,5 @@
-import { ResultContainer } from "../../core/halo-infinite-client.js";
-import { ApiFormattedDate } from "./api-formatted-date.js";
+import { ResultContainer } from "src";
+import { ApiFormattedDate } from "./api-formatted-date";
 
 export interface BanSummary {
   Results: ResultContainer<{

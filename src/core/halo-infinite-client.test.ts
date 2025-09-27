@@ -1,5 +1,5 @@
-import { HaloInfiniteClient } from "./halo-infinite-client.js";
-import { SpartanTokenProvider } from "./token-providers/spartan-token-providers/index.js";
+import { HaloInfiniteClient } from "./halo-infinite-client";
+import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
 describe("Halo Infinite Client", () => {
   it("should retry a request when 401", async () => {
     const spartanTokenProvider: SpartanTokenProvider = {

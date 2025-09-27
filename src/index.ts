@@ -1,56 +1,56 @@
-export { HaloAuthenticationClient } from "./authentication/halo-authentication-client.js";
+export { HaloAuthenticationClient } from "./authentication/halo-authentication-client";
 export {
   RelyingParty,
   XboxAuthenticationClient,
   XboxAuthenticationToken,
-} from "./authentication/xbox-authentication-client.js";
+} from "./authentication/xbox-authentication-client";
 export {
   AssetKindTypeMap,
   HaloInfiniteClient,
   ResultContainer,
-} from "./core/halo-infinite-client.js";
-export { TokenPersister } from "./core/token-persisters/token-persister.js";
+} from "./core/halo-infinite-client";
+export { TokenPersister } from "./core/token-persisters/token-persister";
 export {
   AutoTokenProvider,
   AutoTokenProvider as AutoXstsSpartanTokenProvider,
-} from "./core/token-providers/auto-token-provider.js";
-export { SpartanTokenProvider } from "./core/token-providers/spartan-token-providers/index.js";
-export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider.js";
-export { XboxClient } from "./core/xbox-client.js";
+} from "./core/token-providers/auto-token-provider";
+export { SpartanTokenProvider } from "./core/token-providers/spartan-token-providers";
+export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
+export { XboxClient } from "./core/xbox-client";
 export {
   Asset,
   MapAsset,
   MapModePairAsset,
   PlaylistAsset,
   UgcGameVariantAsset,
-} from "./models/halo-infinite/asset.js";
-export { AssetKind } from "./models/halo-infinite/asset-kind.js";
-export { AssetVersionLink } from "./models/halo-infinite/asset-version-link.js";
-export { GameVariantCategory } from "./models/halo-infinite/game-variant-category.js";
-export { MatchInfo } from "./models/halo-infinite/match-info.js";
-export { MatchOutcome } from "./models/halo-infinite/match-outcome.js";
-export { MatchSkill } from "./models/halo-infinite/match-skill.js";
-export { MatchStats } from "./models/halo-infinite/match-stats.js";
-export { MatchType } from "./models/halo-infinite/match-type.js";
+} from "./models/halo-infinite/asset";
+export { AssetKind } from "./models/halo-infinite/asset-kind";
+export { AssetVersionLink } from "./models/halo-infinite/asset-version-link";
+export { GameVariantCategory } from "./models/halo-infinite/game-variant-category";
+export { MatchInfo } from "./models/halo-infinite/match-info";
+export { MatchOutcome } from "./models/halo-infinite/match-outcome";
+export { MatchSkill } from "./models/halo-infinite/match-skill";
+export { MatchStats } from "./models/halo-infinite/match-stats";
+export { MatchType } from "./models/halo-infinite/match-type";
 export {
   MatchesPrivacy,
   Privacy,
-} from "./models/halo-infinite/matches-privacy.js";
-export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history.js";
-export { Playlist } from "./models/halo-infinite/playlist.js";
-export { PlaylistCsr } from "./models/halo-infinite/playlist-csr.js";
-export { PlaylistCsrContainer } from "./models/halo-infinite/playlist-csr-container.js";
-export { PlaylistExperience } from "./models/halo-infinite/playlist-experience.js";
+} from "./models/halo-infinite/matches-privacy";
+export { PlayerMatchHistory } from "./models/halo-infinite/player-match-history";
+export { Playlist } from "./models/halo-infinite/playlist";
+export { PlaylistCsr } from "./models/halo-infinite/playlist-csr";
+export { PlaylistCsrContainer } from "./models/halo-infinite/playlist-csr-container";
+export { PlaylistExperience } from "./models/halo-infinite/playlist-experience";
 export {
   SeasonCalendarProgressionFile,
   CsrSeasonCalendarProgressionFile,
   ProgressionFileType,
   ProgressionFileTypeMap,
   SeasonProgressionFile,
-} from "./models/halo-infinite/progression-file.js";
-export { ServiceRecord } from "./models/halo-infinite/service-record.js";
-export { Stats } from "./models/halo-infinite/stats.js";
-export { UserInfo } from "./models/halo-infinite/user-info.js";
-export { XboxTicket } from "./models/xbox-ticket.js";
-export { FetchFunction } from "./util/fetch-function.js";
-export { RequestError } from "./util/request-error.js";
+} from "./models/halo-infinite/progression-file";
+export { ServiceRecord } from "./models/halo-infinite/service-record";
+export { Stats } from "./models/halo-infinite/stats";
+export { UserInfo } from "./models/halo-infinite/user-info";
+export { XboxTicket } from "./models/xbox-ticket";
+export { FetchFunction } from "./util/fetch-function";
+export { RequestError } from "./util/request-error";

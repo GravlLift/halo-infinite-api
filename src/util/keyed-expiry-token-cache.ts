@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
-import { ResolvablePromise } from "./resolvable-promise.js";
-import { coalesceDateTime } from "./date-time.js";
+import { ResolvablePromise } from "./resolvable-promise";
+import { coalesceDateTime } from "./date-time";
 
 export class KeyedExpiryTokenCache<
   TToken extends { expiresAt: DateTime },
