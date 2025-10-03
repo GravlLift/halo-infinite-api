@@ -1,3 +1,6 @@
 {
-  "javascript.preferences.importModuleSpecifier": "relative"
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.test.ts"
+  }
 }

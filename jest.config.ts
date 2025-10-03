@@ -2,18 +2,28 @@ const config: import("jest").Config = {
   displayName: "halo-infinite-api",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   preset: "ts-jest/presets/default-esm",
-  extensionsToTreatAsEsm: ['.ts'],
+  extensionsToTreatAsEsm: [".ts"],
   testEnvironment: "node",
-  testTimeout: 60000,
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.test.{ts,tsx}",
+    "!src/**/index.{ts,tsx}",
+  ],
+  coverageReporters: ["text", "text-summary", "lcov"],
+  coverageProvider: "v8",
   transform: {
-    "^.+\\.ts$": ["ts-jest", {
-      tsconfig: "tsconfig.spec.json",
-      useESM: true
-    }]
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        tsconfig: "tsconfig.spec.json",
+        useESM: true,
+      },
+    ],
   },
   moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1"
-  }
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
 };
 
 export default config;
