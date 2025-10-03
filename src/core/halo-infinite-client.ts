@@ -380,6 +380,7 @@ export class HaloInfiniteClient {
       }
     );
 
+  // Don't be fooled, the "profile" version of this endpoint is worthless
   public getCurrentUser = (
     init?: Omit<RequestInit, "body" | "method">
   ): Promise<{ xuid: string; notificationsReadDate: string }> =>
