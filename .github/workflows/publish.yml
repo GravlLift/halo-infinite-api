@@ -1,0 +1,77 @@
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write # for creating a release
+  packages: write
+
+jobs:
+  publish:
+    name: Build, Test, Publish & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --ignore-scripts --if-present
+
+      - name: Build
+        run: npm run build
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          TAG_REF="${GITHUB_REF##*/}"
+          echo "tag=$TAG_REF" >> $GITHUB_OUTPUT
+          # Optional: verify package.json version matches tag
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$TAG_REF" ]; then
+            echo "::warning::Tag ($TAG_REF) does not match package.json version ($PKG_VERSION). Continuing, but consider publishing a matching version.";
+          fi
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish --access public
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 --match "[0-9]*.[0-9]*.[0-9]*" $(git rev-list --tags --max-count=2) | tail -n1 || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:'- %s')
+          else
+            COMMITS=$(git log "$PREV_TAG..HEAD" --pretty=format:'- %s')
+          fi
+          echo "commits<<'EOF'" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: v${{ steps.version.outputs.tag }}
+          body: ${{ steps.notes.outputs.commits }}
+          draft: false
+          prerelease: false

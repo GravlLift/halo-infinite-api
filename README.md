@@ -65,3 +65,29 @@ const client = new HaloInfiniteClient(
 
 const user = await client.getUser("GravlLift");
 ```
+
+### Releasing / Publishing
+
+A GitHub Action automatically publishes the package to npm and creates a GitHub Release whenever you push a semantic version tag (format: `<major>.<minor>.<patch>`, e.g. `12.0.2`).
+
+Steps to cut a release:
+
+1. Update the version in `package.json` according to semver rules.
+2. Commit the change (e.g. `git commit -am "chore: release 12.0.2"`).
+3. Create and push the tag:
+   ```bash
+   git tag 12.0.2
+   git push origin 12.0.2
+   ```
+4. The workflow will:
+   - Install dependencies, run tests, and build
+   - Publish to npm (using the `NPM_TOKEN` secret)
+   - Create a GitHub Release with commit messages since the previous tag
+
+Required repository secrets:
+
+- `NPM_TOKEN` – An npm access token with `publish` permission.
+
+If the tag version doesn't match `package.json` the workflow will warn, but will still publish using the `package.json` version.
+
+Ensure the package has the correct access level (public) on npm before the first automated publish.
