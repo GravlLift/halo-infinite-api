@@ -2,9 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "moduleResolution": "node",
     "outDir": "dist",
-    "declarationDir": "dist",
     "declaration": true,
     "types": ["node"]
   },
@@ -23,7 +21,6 @@
     "src/**/*.js",
     "src/**/*.jsx",
     "src/**/*.ts",
-    "src/**/*.tsx",
-    "setupTests.ts"
+    "src/**/*.tsx"
   ]
 }

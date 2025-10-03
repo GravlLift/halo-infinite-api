@@ -125,10 +125,16 @@ export class HaloInfiniteClient {
           await this.spartanTokenProvider.getSpartanToken()
         );
 
-        return await this.fetchFn(url, {
+        const response = await this.fetchFn(url, {
           ...init,
           headers,
         });
+
+        if (!response.ok && response.status === 401) {
+          throw new RequestError(url, response);
+        }
+
+        return response;
       });
     } finally {
       failureHandler.dispose();
