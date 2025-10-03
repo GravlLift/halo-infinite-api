@@ -12,6 +12,7 @@ describe("Halo Infinite Client", () => {
           .mocked(spartanTokenProvider.getSpartanToken)
           .mockResolvedValueOnce("valid");
         mockFetch.mockResolvedValueOnce({
+          ok: true,
           status: 200,
           json: jest.fn(),
         });
