@@ -130,7 +130,7 @@ export class HaloInfiniteClient {
           headers,
         });
 
-        if (!response.ok && response.status === 401) {
+        if (!response.ok) {
           throw new RequestError(url, response);
         }
 
