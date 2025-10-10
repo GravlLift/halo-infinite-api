@@ -61,9 +61,11 @@ jobs:
           else
             COMMITS=$(git log "$PREV_TAG..HEAD" --pretty=format:'- %s')
           fi
-          echo "commits<<'EOF'" >> $GITHUB_OUTPUT
-          echo "$COMMITS" >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          {
+            echo "commits<<EOF"
+            echo "$COMMITS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
