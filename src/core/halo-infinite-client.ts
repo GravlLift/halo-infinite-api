@@ -456,7 +456,7 @@ export class HaloInfiniteClient {
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.BanProcessorOrigin}.${
         HaloCoreEndpoints.ServiceDomain
-      }/hi/bansummary?targets={${xuids.map(wrapPlayerId).join(",")}}`,
+      }/hi/bansummary?targets=${xuids.map(wrapPlayerId).join(",")}`,
       {
         ...init,
         method: "get",

@@ -26,6 +26,7 @@ export {
 } from "./models/halo-infinite/asset";
 export { AssetKind } from "./models/halo-infinite/asset-kind";
 export { AssetVersionLink } from "./models/halo-infinite/asset-version-link";
+export { BanSummary } from "./models/halo-infinite/ban-summary";
 export { GameVariantCategory } from "./models/halo-infinite/game-variant-category";
 export { MatchInfo } from "./models/halo-infinite/match-info";
 export { MatchOutcome } from "./models/halo-infinite/match-outcome";
