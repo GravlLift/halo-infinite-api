@@ -83,7 +83,6 @@ export class XboxClient {
     settings: string[],
     init?: Omit<RequestInit, "body" | "method">
   ) {
-    init?.headers;
     return await this.executeRequest<{
       profileUsers: {
         id: string;
