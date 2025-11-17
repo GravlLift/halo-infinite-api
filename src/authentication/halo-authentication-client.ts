@@ -19,7 +19,9 @@ export class HaloAuthenticationClient {
       const failureHandler = unauthorizedRetryPolicy.onFailure(
         async ({ handled }) => {
           if (handled) {
+            // Assume both xsts and spartan tokens are invalid, clear both
             await this.clearXstsToken();
+            await this.clearSpartanToken();
           }
         }
       );
