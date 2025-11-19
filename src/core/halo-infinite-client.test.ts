@@ -17,6 +17,7 @@ describe("Halo Infinite Client", () => {
           json: jest.fn(),
         });
       }),
+      getCurrentExpiration: jest.fn().mockResolvedValueOnce(null),
     };
     const mockFetch = jest.fn().mockResolvedValueOnce({
       status: 401,

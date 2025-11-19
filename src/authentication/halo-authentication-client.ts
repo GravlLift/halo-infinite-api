@@ -19,15 +19,13 @@ export class HaloAuthenticationClient {
       const failureHandler = unauthorizedRetryPolicy.onFailure(
         async ({ handled }) => {
           if (handled) {
-            // Assume both xsts and spartan tokens are invalid, clear both
-            await this.clearXstsToken();
-            await this.clearSpartanToken();
+            await this.xsts.clearXstsToken();
           }
         }
       );
       try {
         return await unauthorizedRetryPolicy.execute(async () => {
-          const xstsToken = await this.fetchXstsToken();
+          const xstsToken = await this.xsts.fetchToken();
 
           const tokenRequest: SpartanTokenRequest = {
             Audience: "urn:343:s3:services",
@@ -56,7 +54,7 @@ export class HaloAuthenticationClient {
               token: result_2.SpartanToken,
               expiresAt: DateTime.fromISO(result_2.ExpiresUtc.ISO8601Date),
             };
-            await this.saveToken(newToken);
+            await this.tokenStore.saveToken(newToken);
             return newToken;
           } else {
             throw new RequestError(url, response);
@@ -66,18 +64,22 @@ export class HaloAuthenticationClient {
         failureHandler.dispose();
       }
     },
-    () => this.loadToken()
+    () => this.tokenStore.loadToken()
   );
 
   constructor(
-    private readonly fetchXstsToken: () => Promise<string> | string,
-    private readonly clearXstsToken: () => Promise<void>,
-    private readonly loadToken: () => Promise<{
-      token: string;
-      expiresAt: unknown;
-    } | null>,
-    private readonly saveToken: (token: Token) => Promise<void>,
-    private readonly clearToken: () => Promise<void>,
+    private readonly xsts: {
+      fetchToken: () => Promise<string> | string;
+      clearXstsToken: () => Promise<void>;
+    },
+    private readonly tokenStore: {
+      loadToken: () => Promise<{
+        token: string;
+        expiresAt: unknown;
+      } | null>;
+      saveToken: (token: Token) => Promise<void>;
+      clearToken: () => Promise<void>;
+    },
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
@@ -90,6 +92,11 @@ export class HaloAuthenticationClient {
     // Clear from memory
     this.spartanTokenCache.clearToken();
     // Clear from storage
-    await this.clearToken();
+    await this.tokenStore.clearToken();
+  }
+
+  public async getCurrentExpiration(): Promise<DateTime | null> {
+    const currentToken = await this.spartanTokenCache.getExistingToken();
+    return currentToken ? currentToken.expiresAt : null;
   }
 }

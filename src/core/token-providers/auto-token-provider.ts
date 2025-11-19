@@ -8,6 +8,7 @@ import { SpartanTokenProvider } from "./spartan-token-providers";
 import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 import { XboxTokenProvider } from "./xbox-token-provider";
 import type { FetchFunction } from "../../util/fetch-function";
+import type { DateTime } from "luxon";
 
 /**
  * A SpartanTokenProvider that fetches both the Xbox and Halo tokens in the same
@@ -19,6 +20,7 @@ export class AutoTokenProvider
 {
   public readonly getSpartanToken: () => Promise<string>;
   public readonly clearSpartanToken: () => Promise<void>;
+  public readonly getCurrentExpiration: () => Promise<DateTime | null>;
   public readonly getXboxLiveV3Token: () => Promise<string>;
   public readonly clearXboxLiveV3Token: () => Promise<void>;
 
@@ -38,27 +40,25 @@ export class AutoTokenProvider
       fetchFn
     );
     const haloAuthClient = new HaloAuthenticationClient(
-      async () => {
-        const xstsTicket = await xboxAuthClient.getXstsTicket(
-          getOauth2AccessToken,
-          RelyingParty.Halo
-        );
-        return xstsTicket.Token;
+      {
+        fetchToken: async () => {
+          const xstsTicket = await xboxAuthClient.getXstsTicket(
+            getOauth2AccessToken,
+            RelyingParty.Halo
+          );
+          return xstsTicket.Token;
+        },
+        clearXstsToken: () => xboxAuthClient.clearXstsTicket(RelyingParty.Halo),
       },
-      async () => {
-        await xboxAuthClient.clearXstsTicket(RelyingParty.Halo);
-      },
-      async () => {
-        const tokenPersister = await tokenPeristerOrPromise;
-        return await tokenPersister.load("halo.authToken");
-      },
-      async (token) => {
-        const tokenPersister = await tokenPeristerOrPromise;
-        await tokenPersister.save("halo.authToken", token);
-      },
-      async () => {
-        const tokenPersister = await tokenPeristerOrPromise;
-        await tokenPersister.clear("halo.authToken");
+      {
+        loadToken: async () =>
+          (await (await tokenPeristerOrPromise).load("halo.authToken")) ?? null,
+        saveToken: async (token) => {
+          await (await tokenPeristerOrPromise).save("halo.authToken", token);
+        },
+        clearToken: async () => {
+          await (await tokenPeristerOrPromise).clear("halo.authToken");
+        },
       },
       fetchFn
     );
@@ -74,5 +74,6 @@ export class AutoTokenProvider
     };
     this.clearXboxLiveV3Token = () =>
       xboxAuthClient.clearXstsTicket(RelyingParty.Xbox);
+    this.getCurrentExpiration = () => haloAuthClient.getCurrentExpiration();
   }
 }

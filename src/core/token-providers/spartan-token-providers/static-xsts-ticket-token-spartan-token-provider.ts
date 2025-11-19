@@ -2,6 +2,7 @@ import { TokenPersister } from "../../token-persisters";
 import { HaloAuthenticationClient } from "../../../authentication/halo-authentication-client";
 import { SpartanTokenProvider } from ".";
 import { inMemoryTokenPersister } from "../../token-persisters/in-memory-token-persister";
+import { DateTime } from "luxon";
 
 /**
  * A SpartanTokenProvider that fetches uses a pre-fetched XSTS ticket token.
@@ -14,6 +15,7 @@ export class StaticXstsTicketTokenSpartanTokenProvider
 {
   public readonly getSpartanToken: () => Promise<string>;
   public readonly clearSpartanToken: () => Promise<void>;
+  public readonly getCurrentExpiration: () => Promise<DateTime | null>;
 
   constructor(
     xstsTicketToken: string,
@@ -27,23 +29,28 @@ export class StaticXstsTicketTokenSpartanTokenProvider
     }
 
     const haloAuthClient = new HaloAuthenticationClient(
-      () => xstsTicketToken,
-      async () => {
-        console.warn(
-          "StaticXstsTicketTokenSpartanTokenProvider does not clearing xstsTickets"
-        );
+      {
+        fetchToken: () => xstsTicketToken,
+        clearXstsToken: async () => {
+          console.warn(
+            "StaticXstsTicketTokenSpartanTokenProvider does not support clearing xstsTickets"
+          );
+        },
       },
-      async () =>
-        (await (await actualTokenPersister).load("halo.authToken")) ?? null,
-      async (token) => {
-        await (await actualTokenPersister).save("halo.authToken", token);
-      },
-      async () => {
-        await (await actualTokenPersister).clear("halo.authToken");
+      {
+        loadToken: async () =>
+          (await (await actualTokenPersister).load("halo.authToken")) ?? null,
+        saveToken: async (token) => {
+          await (await actualTokenPersister).save("halo.authToken", token);
+        },
+        clearToken: async () => {
+          await (await actualTokenPersister).clear("halo.authToken");
+        },
       }
     );
 
     this.getSpartanToken = () => haloAuthClient.getSpartanToken();
     this.clearSpartanToken = () => haloAuthClient.clearSpartanToken();
+    this.getCurrentExpiration = () => haloAuthClient.getCurrentExpiration();
   }
 }

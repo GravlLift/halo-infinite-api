@@ -100,6 +100,7 @@ export class HaloInfiniteClient {
 
   constructor(
     private readonly spartanTokenProvider: SpartanTokenProvider,
+    private readonly clearXstsToken: () => Promise<void>,
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
@@ -107,6 +108,12 @@ export class HaloInfiniteClient {
     const failureHandler = unauthorizedRetryPolicy.onFailure(
       async ({ handled }) => {
         if (handled) {
+          const expiration =
+            await this.spartanTokenProvider.getCurrentExpiration();
+          if (expiration && expiration > DateTime.now().plus({ minutes: 1 })) {
+            // Token should still be valid, but was rejected. That means the xsts is likely invalid.
+            await this.clearXstsToken();
+          }
           await this.spartanTokenProvider.clearSpartanToken();
         }
       }
