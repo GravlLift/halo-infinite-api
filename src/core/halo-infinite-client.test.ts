@@ -23,7 +23,11 @@ describe("Halo Infinite Client", () => {
       status: 401,
     });
 
-    const client = new HaloInfiniteClient(spartanTokenProvider, mockFetch);
+    const client = new HaloInfiniteClient(
+      spartanTokenProvider,
+      jest.fn(),
+      mockFetch
+    );
     await client.getCurrentUser();
 
     expect(spartanTokenProvider.clearSpartanToken).toHaveBeenCalledTimes(1);
