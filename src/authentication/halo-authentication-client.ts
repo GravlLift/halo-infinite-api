@@ -7,13 +7,14 @@ import { GlobalConstants } from "../util/global-contants";
 import { RequestError } from "../util/request-error";
 import { unauthorizedRetryPolicy } from "../core/request-policy";
 import { HaloCoreEndpoints } from "../endpoints/halo-core-endpoints";
+import { SpartanTokenProvider } from "..";
 
 export interface Token {
   token: string;
   expiresAt: DateTime;
 }
 
-export class HaloAuthenticationClient {
+export class HaloAuthenticationClient implements SpartanTokenProvider {
   private spartanTokenCache = new ExpiryTokenCache(
     async () => {
       const failureHandler = unauthorizedRetryPolicy.onFailure(

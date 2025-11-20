@@ -14,8 +14,8 @@ export {
   AutoTokenProvider,
   AutoTokenProvider as AutoXstsSpartanTokenProvider,
 } from "./core/token-providers/auto-token-provider";
-export { SpartanTokenProvider } from "./core/token-providers/spartan-token-providers";
-export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/spartan-token-providers/static-xsts-ticket-token-spartan-token-provider";
+export { SpartanTokenProvider } from "./core/token-providers/spartan-token-provider";
+export { StaticXstsTicketTokenSpartanTokenProvider } from "./core/token-providers/static-xsts-ticket-token-spartan-token-provider";
 export { XboxClient } from "./core/xbox-client";
 export {
   Asset,

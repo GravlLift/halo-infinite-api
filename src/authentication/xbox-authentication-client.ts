@@ -108,16 +108,14 @@ export class XboxAuthenticationClient {
   );
 
   constructor(
+    private readonly getOauth2AccessToken: () => Promise<string>,
     private readonly tokenPersisterOrPromise?:
       | TokenPersister
       | Promise<TokenPersister>,
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  public async getXstsTicket(
-    getOauth2AccessToken: () => Promise<string>,
-    relyingParty: RelyingParty
-  ) {
+  public async getXstsTicket(relyingParty: RelyingParty) {
     let xstsTicket = await this.xstsTicketCache.getExistingToken(relyingParty);
     if (!xstsTicket) {
       let userToken = await this.userTokenCache.getExistingToken();
@@ -137,7 +135,7 @@ export class XboxAuthenticationClient {
           if (!userToken) {
             // Ouath2 token depends on nothing, so we can fetch it without
             // worrying if it is expired.
-            const oauthToken = await getOauth2AccessToken();
+            const oauthToken = await this.getOauth2AccessToken();
             userToken = await this.userTokenCache.getToken(oauthToken);
           }
           return this.xstsTicketCache.getToken(relyingParty, userToken.Token);
@@ -158,4 +156,11 @@ export class XboxAuthenticationClient {
 
   public getXboxLiveV3Token = (xboxTicket: XboxTicket) =>
     `XBL3.0 x=${xboxTicket.DisplayClaims.xui[0].uhs};${xboxTicket.Token}`;
+
+  public clearXboxUserToken = async () => {
+    // Clear from memory
+    this.userTokenCache.clearToken();
+    // Clear from storage
+    (await this.tokenPersisterOrPromise)?.clear("xbox.userToken");
+  };
 }

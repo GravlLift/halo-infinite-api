@@ -4,7 +4,7 @@ import {
 } from "../../authentication/xbox-authentication-client";
 import { TokenPersister } from "../token-persisters";
 import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
-import { SpartanTokenProvider } from "./spartan-token-providers";
+import { SpartanTokenProvider } from "./spartan-token-provider";
 import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 import { XboxTokenProvider } from "./xbox-token-provider";
 import type { FetchFunction } from "../../util/fetch-function";
@@ -16,11 +16,9 @@ import type { DateTime } from "luxon";
  * CORS restrictions.
  */
 export class AutoTokenProvider
+  extends HaloAuthenticationClient
   implements SpartanTokenProvider, XboxTokenProvider
 {
-  public readonly getSpartanToken: () => Promise<string>;
-  public readonly clearSpartanToken: () => Promise<void>;
-  public readonly getCurrentExpiration: () => Promise<DateTime | null>;
   public readonly getXboxLiveV3Token: () => Promise<string>;
   public readonly clearXboxLiveV3Token: () => Promise<void>;
 
@@ -29,21 +27,10 @@ export class AutoTokenProvider
     tokenPersister?: TokenPersister | Promise<TokenPersister>,
     fetchFn?: FetchFunction
   ) {
-    let tokenPeristerOrPromise: TokenPersister | Promise<TokenPersister>;
-    if (tokenPersister) {
-      tokenPeristerOrPromise = tokenPersister;
-    } else {
-      tokenPeristerOrPromise = inMemoryTokenPersister;
-    }
-    const xboxAuthClient = new XboxAuthenticationClient(
-      tokenPersister,
-      fetchFn
-    );
-    const haloAuthClient = new HaloAuthenticationClient(
+    super(
       {
         fetchToken: async () => {
           const xstsTicket = await xboxAuthClient.getXstsTicket(
-            getOauth2AccessToken,
             RelyingParty.Halo
           );
           return xstsTicket.Token;
@@ -62,18 +49,23 @@ export class AutoTokenProvider
       },
       fetchFn
     );
+    let tokenPeristerOrPromise: TokenPersister | Promise<TokenPersister>;
+    if (tokenPersister) {
+      tokenPeristerOrPromise = tokenPersister;
+    } else {
+      tokenPeristerOrPromise = inMemoryTokenPersister;
+    }
+    const xboxAuthClient = new XboxAuthenticationClient(
+      getOauth2AccessToken,
+      tokenPersister,
+      fetchFn
+    );
 
-    this.getSpartanToken = () => haloAuthClient.getSpartanToken();
-    this.clearSpartanToken = () => haloAuthClient.clearSpartanToken();
     this.getXboxLiveV3Token = async () => {
-      const xstsTicket = await xboxAuthClient.getXstsTicket(
-        getOauth2AccessToken,
-        RelyingParty.Xbox
-      );
+      const xstsTicket = await xboxAuthClient.getXstsTicket(RelyingParty.Xbox);
       return xboxAuthClient.getXboxLiveV3Token(xstsTicket);
     };
     this.clearXboxLiveV3Token = () =>
       xboxAuthClient.clearXstsTicket(RelyingParty.Xbox);
-    this.getCurrentExpiration = () => haloAuthClient.getCurrentExpiration();
   }
 }

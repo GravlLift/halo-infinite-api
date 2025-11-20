@@ -1,7 +1,7 @@
-import { TokenPersister } from "../../token-persisters";
-import { HaloAuthenticationClient } from "../../../authentication/halo-authentication-client";
-import { SpartanTokenProvider } from ".";
-import { inMemoryTokenPersister } from "../../token-persisters/in-memory-token-persister";
+import { TokenPersister } from "../token-persisters";
+import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
+import { SpartanTokenProvider } from "./spartan-token-provider";
+import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
 import { DateTime } from "luxon";
 
 /**
@@ -11,24 +11,14 @@ import { DateTime } from "luxon";
  * and run on a server (such as one provided by the user).
  */
 export class StaticXstsTicketTokenSpartanTokenProvider
+  extends HaloAuthenticationClient
   implements SpartanTokenProvider
 {
-  public readonly getSpartanToken: () => Promise<string>;
-  public readonly clearSpartanToken: () => Promise<void>;
-  public readonly getCurrentExpiration: () => Promise<DateTime | null>;
-
   constructor(
     xstsTicketToken: string,
     tokenPersister?: TokenPersister | Promise<TokenPersister>
   ) {
-    let actualTokenPersister: TokenPersister | Promise<TokenPersister>;
-    if (tokenPersister) {
-      actualTokenPersister = tokenPersister;
-    } else {
-      actualTokenPersister = inMemoryTokenPersister;
-    }
-
-    const haloAuthClient = new HaloAuthenticationClient(
+    super(
       {
         fetchToken: () => xstsTicketToken,
         clearXstsToken: async () => {
@@ -48,9 +38,11 @@ export class StaticXstsTicketTokenSpartanTokenProvider
         },
       }
     );
-
-    this.getSpartanToken = () => haloAuthClient.getSpartanToken();
-    this.clearSpartanToken = () => haloAuthClient.clearSpartanToken();
-    this.getCurrentExpiration = () => haloAuthClient.getCurrentExpiration();
+    let actualTokenPersister: TokenPersister | Promise<TokenPersister>;
+    if (tokenPersister) {
+      actualTokenPersister = tokenPersister;
+    } else {
+      actualTokenPersister = inMemoryTokenPersister;
+    }
   }
 }

@@ -1,12 +1,17 @@
 import { HaloInfiniteClient } from "./halo-infinite-client";
-import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
+import { SpartanTokenProvider } from "./token-providers/spartan-token-provider";
+import { ResolvablePromise } from "../util/resolvable-promise";
 describe("Halo Infinite Client", () => {
   it("should retry a request when 401", async () => {
+    const clearStartedPromise = new ResolvablePromise<void>();
+    const clearCompletedPromise = new ResolvablePromise<void>();
     const spartanTokenProvider: SpartanTokenProvider = {
       getSpartanToken: jest.fn().mockResolvedValue("expired"),
       clearSpartanToken: jest.fn().mockImplementationOnce(async () => {
         // Fake timeout to see if code skips ahead
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        clearStartedPromise.resolve();
+        await clearCompletedPromise;
+
         // Set next call to resolve
         jest
           .mocked(spartanTokenProvider.getSpartanToken)
@@ -23,14 +28,18 @@ describe("Halo Infinite Client", () => {
       status: 401,
     });
 
-    const client = new HaloInfiniteClient(
-      spartanTokenProvider,
-      jest.fn(),
-      mockFetch
-    );
-    await client.getCurrentUser();
+    const client = new HaloInfiniteClient(spartanTokenProvider, mockFetch);
+    const currentUserPromise = client.getCurrentUser();
 
-    expect(spartanTokenProvider.clearSpartanToken).toHaveBeenCalledTimes(1);
+    await clearStartedPromise;
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Proceed with failure handler
+    clearCompletedPromise.resolve();
+
+    await currentUserPromise;
+
     expect(
       mockFetch.mock.calls[1][1].headers.get("x-343-authorization-spartan")
     ).toBe("valid");

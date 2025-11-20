@@ -16,7 +16,7 @@ import { PlaylistCsrContainer } from "../models/halo-infinite/playlist-csr-conta
 import { ServiceRecord } from "../models/halo-infinite/service-record";
 import { UserInfo } from "../models/halo-infinite/user-info";
 import { GlobalConstants } from "../util/global-contants";
-import { SpartanTokenProvider } from "./token-providers/spartan-token-providers";
+import { SpartanTokenProvider } from "./token-providers/spartan-token-provider";
 import { RequestError } from "../util/request-error";
 import { MatchesPrivacy } from "../models/halo-infinite/matches-privacy";
 import { MedalsMetadataFile } from "../models/halo-infinite/medals-metadata-file";
@@ -100,20 +100,13 @@ export class HaloInfiniteClient {
 
   constructor(
     private readonly spartanTokenProvider: SpartanTokenProvider,
-    private readonly clearXstsToken: () => Promise<void>,
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  private async executeRequest(url: string, init: RequestInit) {
+  protected async executeRequest(url: string, init: RequestInit) {
     const failureHandler = unauthorizedRetryPolicy.onFailure(
       async ({ handled }) => {
         if (handled) {
-          const expiration =
-            await this.spartanTokenProvider.getCurrentExpiration();
-          if (expiration && expiration > DateTime.now().plus({ minutes: 1 })) {
-            // Token should still be valid, but was rejected. That means the xsts is likely invalid.
-            await this.clearXstsToken();
-          }
           await this.spartanTokenProvider.clearSpartanToken();
         }
       }
@@ -148,7 +141,7 @@ export class HaloInfiniteClient {
     }
   }
 
-  private async executeJsonRequest<T>(url: string, init: RequestInit) {
+  protected async executeJsonRequest<T>(url: string, init: RequestInit) {
     const response = await this.executeRequest(url, init);
 
     if (response.status >= 200 && response.status < 300) {
@@ -158,7 +151,7 @@ export class HaloInfiniteClient {
     }
   }
 
-  private async executeResultsRequest<T>(
+  protected async executeResultsRequest<T>(
     ...args: Parameters<HaloInfiniteClient["executeJsonRequest"]>
   ) {
     let resultsContainer: ResultsContainer<T>;
@@ -180,7 +173,7 @@ export class HaloInfiniteClient {
     return resultsContainer.Value;
   }
 
-  private async executePaginationRequest<T>(
+  protected async executePaginationRequest<T>(
     count: number,
     start: number,
     queryParameters: Record<string, string>,
