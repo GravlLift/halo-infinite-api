@@ -1,14 +1,13 @@
+import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
 import {
   RelyingParty,
   XboxAuthenticationClient,
 } from "../../authentication/xbox-authentication-client";
-import { TokenPersister } from "../token-persisters";
-import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
-import { SpartanTokenProvider } from "./spartan-token-provider";
-import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
-import { XboxTokenProvider } from "./xbox-token-provider";
 import type { FetchFunction } from "../../util/fetch-function";
-import type { DateTime } from "luxon";
+import { TokenPersister } from "../token-persisters";
+import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
+import { SpartanTokenProvider } from "./spartan-token-provider";
+import { XboxTokenProvider } from "./xbox-token-provider";
 
 /**
  * A SpartanTokenProvider that fetches both the Xbox and Halo tokens in the same
