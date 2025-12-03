@@ -1,8 +1,7 @@
-import { TokenPersister } from "../token-persisters";
 import { HaloAuthenticationClient } from "../../authentication/halo-authentication-client";
-import { SpartanTokenProvider } from "./spartan-token-provider";
+import { TokenPersister } from "../token-persisters";
 import { inMemoryTokenPersister } from "../token-persisters/in-memory-token-persister";
-import { DateTime } from "luxon";
+import { SpartanTokenProvider } from "./spartan-token-provider";
 
 /**
  * A SpartanTokenProvider that fetches uses a pre-fetched XSTS ticket token.
