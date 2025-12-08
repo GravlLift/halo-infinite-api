@@ -19,6 +19,10 @@ export interface XboxAuthenticationToken {
 }
 
 export class XboxAuthenticationClient {
+  static readonly userTokenName = "xbox.userToken";
+  static readonly xstsTicketName = (relyingParty: RelyingParty) =>
+    `xbox.xstsTicket.${relyingParty}`;
+
   private userTokenCache = new ExpiryTokenCache(
     async (accessToken: string) => {
       const url = "https://user.auth.xboxlive.com/user/authenticate";
@@ -59,7 +63,7 @@ export class XboxAuthenticationClient {
       const tokenPersister = await this.tokenPersisterOrPromise;
       return (
         (await tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
-          "xbox.userToken"
+          XboxAuthenticationClient.userTokenName
         )) ?? null
       );
     }
@@ -93,7 +97,7 @@ export class XboxAuthenticationClient {
         };
         await (
           await this.tokenPersisterOrPromise
-        )?.save("xbox.xstsTicket." + relyingParty, token);
+        )?.save(XboxAuthenticationClient.xstsTicketName(relyingParty), token);
         return token;
       } else {
         throw new RequestError(url, response);
