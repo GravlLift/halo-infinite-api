@@ -30,6 +30,7 @@ import { KeyedExpiryTokenCache } from "../util/keyed-expiry-token-cache";
 import { DateTime } from "luxon";
 import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
 import { SeasonCalendarContainer } from "../models/halo-infinite/season";
+import { Settings } from "../models/halo-infinite/settings";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -80,7 +81,8 @@ export class HaloInfiniteClient {
         }/oban/flight-configurations/titles/hi/audiences/retail/players/${wrapPlayerId(
           xuid
         )}/active`,
-        { method: "get" }
+        { method: "get" },
+        false
       );
       const {
         FlightConfigurationId,
@@ -103,7 +105,11 @@ export class HaloInfiniteClient {
     private readonly fetchFn: FetchFunction = defaultFetch
   ) {}
 
-  protected async executeRequest(url: string, init: RequestInit) {
+  protected async executeRequest(
+    url: string,
+    init: RequestInit,
+    skipAuth: boolean
+  ) {
     const failureHandler = unauthorizedRetryPolicy.onFailure(
       async ({ handled }) => {
         if (handled) {
@@ -120,10 +126,12 @@ export class HaloInfiniteClient {
         if (!headers.has("Accept")) {
           headers.set("Accept", "application/json");
         }
-        headers.set(
-          "x-343-authorization-spartan",
-          await this.spartanTokenProvider.getSpartanToken()
-        );
+        if (!skipAuth) {
+          headers.set(
+            "x-343-authorization-spartan",
+            await this.spartanTokenProvider.getSpartanToken()
+          );
+        }
 
         const response = await this.fetchFn(url, {
           ...init,
@@ -141,8 +149,12 @@ export class HaloInfiniteClient {
     }
   }
 
-  protected async executeJsonRequest<T>(url: string, init: RequestInit) {
-    const response = await this.executeRequest(url, init);
+  protected async executeJsonRequest<T>(
+    url: string,
+    init: RequestInit,
+    skipAuth?: boolean
+  ) {
+    const response = await this.executeRequest(url, init, skipAuth ?? false);
 
     if (response.status >= 200 && response.status < 300) {
       return (await response.json()) as T;
@@ -472,5 +484,17 @@ export class HaloInfiniteClient {
         ...init,
         method: "get",
       }
+    );
+
+  public getSettings = (
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<Settings> =>
+    this.executeJsonRequest(
+      `https://${HaloCoreEndpoints.SettingsOrigin}.${HaloCoreEndpoints.ServiceDomain}/settings/hipc/e2a0a7c6-6efe-42af-9283-c2ab73250c48`,
+      {
+        ...init,
+        method: "get",
+      },
+      true
     );
 }
