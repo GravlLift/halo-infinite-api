@@ -31,6 +31,7 @@ import { DateTime } from "luxon";
 import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
 import { SeasonCalendarContainer } from "../models/halo-infinite/season";
 import { Settings } from "../models/halo-infinite/settings";
+import { MatchCount } from "src/models/halo-infinite/match-count";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -330,6 +331,18 @@ export class HaloInfiniteClient {
       }
     );
   };
+
+  public getPlayerMatchCount = (
+    playerXuid: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ) =>
+    this.executeJsonRequest<MatchCount>(
+      `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/players/${wrapPlayerId(playerXuid)}/matches/count`,
+      {
+        ...init,
+        method: "get",
+      }
+    );
 
   public getMatchStats = (
     matchId: string,
