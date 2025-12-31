@@ -26,9 +26,14 @@ export {
 } from "./models/halo-infinite/asset";
 export { AssetKind } from "./models/halo-infinite/asset-kind";
 export { AssetVersionLink } from "./models/halo-infinite/asset-version-link";
-export { BanSummary } from "./models/halo-infinite/ban-summary";
+export {
+  BanSummary,
+  BanScope,
+  BanType,
+} from "./models/halo-infinite/ban-summary";
+export { BanMessage } from "./models/halo-infinite/ban-message";
 export { GameVariantCategory } from "./models/halo-infinite/game-variant-category";
-export { MatchCount } from './models/halo-infinite/match-count';
+export { MatchCount } from "./models/halo-infinite/match-count";
 export { MatchInfo } from "./models/halo-infinite/match-info";
 export { MatchOutcome } from "./models/halo-infinite/match-outcome";
 export { MatchSkill } from "./models/halo-infinite/match-skill";

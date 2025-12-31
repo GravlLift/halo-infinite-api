@@ -1,6 +1,14 @@
 import { ResultContainer } from "src";
 import { ApiFormattedDate } from "./api-formatted-date";
 
+export enum BanType {
+  Matchmaking = 1,
+}
+
+export enum BanScope {
+  Global = 1,
+}
+
 export interface BanSummary {
   Results: ResultContainer<{
     BansInEffect: {

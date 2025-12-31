@@ -32,6 +32,7 @@ import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
 import { SeasonCalendarContainer } from "../models/halo-infinite/season";
 import { Settings } from "../models/halo-infinite/settings";
 import { MatchCount } from "src/models/halo-infinite/match-count";
+import { BanMessage } from "../models/halo-infinite/ban-message";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -337,7 +338,9 @@ export class HaloInfiniteClient {
     init?: Omit<RequestInit, "body" | "method">
   ) =>
     this.executeJsonRequest<MatchCount>(
-      `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/players/${wrapPlayerId(playerXuid)}/matches/count`,
+      `https://${HaloCoreEndpoints.StatsOrigin}.${
+        HaloCoreEndpoints.ServiceDomain
+      }/hi/players/${wrapPlayerId(playerXuid)}/matches/count`,
       {
         ...init,
         method: "get",
@@ -487,6 +490,19 @@ export class HaloInfiniteClient {
         method: "get",
       }
     );
+
+  public getBanMessage(
+    banPath: string,
+    init?: Omit<RequestInit, "body" | "method">
+  ): Promise<BanMessage> {
+    return this.executeJsonRequest(
+      `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/banning/file/${banPath}`,
+      {
+        ...init,
+        method: "get",
+      }
+    );
+  }
 
   public getSeasonCalendar = (
     init?: Omit<RequestInit, "body" | "method">
