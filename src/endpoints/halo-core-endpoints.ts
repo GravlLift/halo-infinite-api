@@ -10,7 +10,7 @@ export const HaloCoreEndpoints = {
   /** Discovery origin */
   DiscoveryOrigin: "discovery-infiniteugc",
 
-  CommsOrigin: "wpcomms",
+  CommsOrigin: "comms",
   BanProcessorOrigin: "banprocessor",
   SettingsOrigin: "settings",
 
