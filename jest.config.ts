@@ -12,6 +12,7 @@ const config: import("jest").Config = {
   ],
   coverageReporters: ["text", "text-summary", "lcov"],
   coverageProvider: "v8",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   transform: {
     "^.+\\.ts$": [
       "ts-jest",

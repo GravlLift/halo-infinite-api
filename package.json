@@ -24,7 +24,7 @@
   "scripts": {
     "build": "tsup",
     "prepack": "npm run build",
-    "test": "jest"
+    "test": "node --no-warnings --experimental-vm-modules ./scripts/jest-runner.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 {
-  "files": [],
+  "files": ["src/types/import-meta.d.ts"],
   "include": [],
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
@@ -19,14 +19,13 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
+    "types": ["node"]
   },
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
+  "references": []
 }
