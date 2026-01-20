@@ -1,3 +1,4 @@
+import { PathMap, QueryMap } from "./endpoint-type-maps";
 import settings from "./settings";
 
 type Endpoints = (typeof settings)["Endpoints"];
@@ -21,7 +22,7 @@ export type CategoryEndpointDictionary = {
 
 type EndpointPath<
   TCategory extends Categories,
-  TEndpoint extends keyof CategoryEndpointDictionary[TCategory]
+  TEndpoint extends keyof CategoryEndpointDictionary[TCategory],
 > = "Path" extends keyof NonNullable<
   CategoryEndpointDictionary[TCategory][TEndpoint]
 >
@@ -30,7 +31,7 @@ type EndpointPath<
 
 type EndpointQueryString<
   TCategory extends Categories,
-  TEndpoint extends keyof CategoryEndpointDictionary[TCategory]
+  TEndpoint extends keyof CategoryEndpointDictionary[TCategory],
 > = "QueryString" extends keyof NonNullable<
   CategoryEndpointDictionary[TCategory][TEndpoint]
 >
@@ -44,25 +45,41 @@ type ExtractTemplateKeys<TPath extends string> =
 
 export type QueryParams<
   TCategory extends Categories,
-  TEndpoint extends keyof CategoryEndpointDictionary[TCategory]
-> = EndpointQueryString<TCategory, TEndpoint> extends string
-  ? {
-      [TKey in ExtractTemplateKeys<
-        EndpointQueryString<TCategory, TEndpoint>
-      >]?: string;
-    }
-  : {};
+  TEndpoint extends keyof CategoryEndpointDictionary[TCategory],
+> =
+  EndpointQueryString<TCategory, TEndpoint> extends string
+    ? {
+        [TKey in ExtractTemplateKeys<
+          EndpointQueryString<TCategory, TEndpoint>
+        >]?: TCategory extends keyof QueryMap
+          ? TEndpoint extends keyof QueryMap[TCategory]
+            ? TKey extends keyof QueryMap[TCategory][TEndpoint]
+              ? QueryMap[TCategory][TEndpoint][TKey]
+              : string
+            : string
+          : string;
+      }
+    : {};
 
 export type PathParams<
   TCategory extends Categories,
-  TEndpoint extends keyof CategoryEndpointDictionary[TCategory]
-> = EndpointPath<TCategory, TEndpoint> extends string
-  ? {
-      [TKey in ExtractTemplateKeys<EndpointPath<TCategory, TEndpoint>>]: any;
-    }
-  : {};
+  TEndpoint extends keyof CategoryEndpointDictionary[TCategory],
+> =
+  EndpointPath<TCategory, TEndpoint> extends string
+    ? {
+        [TKey in ExtractTemplateKeys<
+          EndpointPath<TCategory, TEndpoint>
+        >]: TCategory extends keyof PathMap
+          ? TEndpoint extends keyof PathMap[TCategory]
+            ? TKey extends keyof PathMap[TCategory][TEndpoint]
+              ? PathMap[TCategory][TEndpoint][TKey]
+              : string
+            : string
+          : string;
+      }
+    : {};
 
 export type EndpointParameters<
   TCategory extends Categories,
-  TEndpoint extends keyof CategoryEndpointDictionary[TCategory]
+  TEndpoint extends keyof CategoryEndpointDictionary[TCategory],
 > = PathParams<TCategory, TEndpoint> & QueryParams<TCategory, TEndpoint>;

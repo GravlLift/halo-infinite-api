@@ -1,6 +1,27 @@
-import { HaloInfiniteClient } from "./";
+import { HaloInfiniteCalculatedClient } from "./";
 import { SpartanTokenProvider } from "../token-providers/spartan-token-provider";
 import { ResolvablePromise } from "../../util/resolvable-promise";
+
+type QueryTest = Parameters<
+  HaloInfiniteCalculatedClient["Academy"]["GetContent"]
+>[0];
+const queryTest: {
+  clearanceId?: string | undefined;
+} = {} as QueryTest;
+
+type PathTest = Parameters<
+  HaloInfiniteCalculatedClient["Economy"]["WeaponCoreCustomization"]
+>[0];
+const pathTest: {
+  player: string;
+  coreId: string;
+} = {} as PathTest;
+
+type ResultTest = ReturnType<
+  HaloInfiniteCalculatedClient["Stats"]["GetMatchHistory"]
+>;
+const resultTest: ResultTest = {} as ResultTest;
+
 describe("Halo Infinite Client", () => {
   it("should retry a request when 401", async () => {
     const clearStartedPromise = new ResolvablePromise<void>();
@@ -28,7 +49,10 @@ describe("Halo Infinite Client", () => {
       status: 401,
     });
 
-    const client = new HaloInfiniteClient(spartanTokenProvider, mockFetch);
+    const client = new HaloInfiniteCalculatedClient(
+      spartanTokenProvider,
+      mockFetch,
+    );
     const currentUserPromise = client.getCurrentUser();
 
     await clearStartedPromise;
@@ -41,14 +65,16 @@ describe("Halo Infinite Client", () => {
     await currentUserPromise;
 
     expect(
-      mockFetch.mock.calls[1][1].headers.get("x-343-authorization-spartan")
+      mockFetch.mock.calls[1][1].headers.get("x-343-authorization-spartan"),
     ).toBe("valid");
   });
 
   it("should create a client", () => {
     const spartanTokenProvider = {} as SpartanTokenProvider;
     const fetchFn = jest.fn();
-    const client = new HaloInfiniteClient(spartanTokenProvider, fetchFn);
-    client.Stats.
+    const client = new HaloInfiniteCalculatedClient(
+      spartanTokenProvider,
+      fetchFn,
+    );
   });
 });

@@ -353,11 +353,7 @@ export default {
         RetryIfNotFound: false,
       },
     },
-    noretry: {
-      RetryPolicyId: "noretry",
-      TimeoutMs: 10000,
-      RetryOptions: null,
-    },
+    noretry: { RetryPolicyId: "noretry", TimeoutMs: 10000, RetryOptions: null },
     linearretry_gsk: {
       RetryPolicyId: "linearretry_gsk",
       TimeoutMs: 10000,

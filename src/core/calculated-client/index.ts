@@ -1,6 +1,7 @@
 import { FetchFunction, defaultFetch } from "../../util/fetch-function";
 import { SpartanTokenProvider } from "../token-providers/spartan-token-provider";
 import { HaloInfiniteClientBase } from "./base";
+import { ResultMap } from "./endpoint-type-maps";
 import settings from "./settings";
 import {
   Categories,
@@ -15,9 +16,15 @@ type CategoryMap<TCategoryKey extends Categories> = {
       ...(EndpointParameters<TCategoryKey, TEndpointKey> extends never
         ? []
         : [params: EndpointParameters<TCategoryKey, TEndpointKey>]),
-      init?: Omit<RequestInit, "body" | "method">
+      init?: Omit<RequestInit, "body" | "method">,
     ]
-  ) => Promise<any>;
+  ) => Promise<
+    TCategoryKey extends keyof ResultMap
+      ? TEndpointKey extends keyof ResultMap[TCategoryKey]
+        ? ResultMap[TCategoryKey][TEndpointKey]
+        : unknown
+      : unknown
+  >;
 };
 
 type FunctionMap = {
@@ -41,19 +48,19 @@ export interface ResultsContainer<TValue> {
   Value: ResultContainer<TValue>[];
 }
 
-export declare interface HaloInfiniteClient extends FunctionMap {}
+export declare interface HaloInfiniteCalculatedClient extends FunctionMap {}
 
-export class HaloInfiniteClient extends HaloInfiniteClientBase {
+export class HaloInfiniteCalculatedClient extends HaloInfiniteClientBase {
   constructor(
     spartanTokenProvider: SpartanTokenProvider,
-    fetchFn: FetchFunction = defaultFetch
+    fetchFn: FetchFunction = defaultFetch,
   ) {
     super(spartanTokenProvider, fetchFn);
     return new Proxy(this, {
       get: <TCategory extends Categories>(
-        target: HaloInfiniteClient,
+        target: HaloInfiniteCalculatedClient,
         categoryKey: TCategory,
-        receiver: any
+        receiver: any,
       ) => {
         // Preserve normal members (methods, fields) if they exist
         if (categoryKey in target) {
@@ -66,7 +73,7 @@ export class HaloInfiniteClient extends HaloInfiniteClientBase {
           {
             get: <TEndpoint extends keyof EndpointsInCategory<TCategory>>(
               _catTarget: {},
-              endpointKey: TEndpoint
+              endpointKey: TEndpoint,
             ) => {
               // Endpoint function matching CategoryMap signature
               return async (
@@ -74,7 +81,7 @@ export class HaloInfiniteClient extends HaloInfiniteClientBase {
                   ...(EndpointParameters<TCategory, TEndpoint> extends never
                     ? []
                     : [params: EndpointParameters<TCategory, TEndpoint>]),
-                  init?: Omit<RequestInit, "body" | "method">
+                  init?: Omit<RequestInit, "body" | "method">,
                 ]
               ) => {
                 const [paramsOrInit, maybeInit] = args as any[];
@@ -84,18 +91,18 @@ export class HaloInfiniteClient extends HaloInfiniteClientBase {
                   ("headers" in paramsOrInit || "mode" in paramsOrInit);
                 const params = isInitOnly
                   ? ({} as EndpointParameters<TCategory, TEndpoint>)
-                  : paramsOrInit ?? {};
+                  : (paramsOrInit ?? {});
                 const init = isInitOnly ? paramsOrInit : maybeInit;
 
                 return this.executeDefaultRequest<TCategory, TEndpoint>(
                   categoryKey,
                   endpointKey,
                   params,
-                  init
+                  init,
                 );
               };
             },
-          }
+          },
         );
       },
     });
@@ -103,12 +110,13 @@ export class HaloInfiniteClient extends HaloInfiniteClientBase {
 
   private async executeDefaultRequest<
     TCategoryKey extends Categories & string,
-    TEndpointKey extends keyof CategoryEndpointDictionary[TCategoryKey] & string
+    TEndpointKey extends keyof CategoryEndpointDictionary[TCategoryKey] &
+      string,
   >(
     category: TCategoryKey,
     endpoint: TEndpointKey,
     params: EndpointParameters<TCategoryKey, TEndpointKey>,
-    init?: RequestInit
+    init?: RequestInit,
   ) {
     const endpointInfo =
       settings.Endpoints[
@@ -127,7 +135,13 @@ export class HaloInfiniteClient extends HaloInfiniteClientBase {
     const query = endpointInfo.QueryString.replace(/{(.*?)}/g, (_match, p1) => {
       const key = p1 as keyof EndpointParameters<TCategoryKey, TEndpointKey>;
       if (key in params) {
-        return encodeURIComponent(String(params[key]));
+        if (Array.isArray(params[key])) {
+          return (params[key] as unknown as string[])
+            .map((x) => encodeURIComponent(String(x)))
+            .join(",");
+        } else {
+          return encodeURIComponent(String(params[key]));
+        }
       } else {
         throw new Error(`Missing query parameter: ${p1}`);
       }
