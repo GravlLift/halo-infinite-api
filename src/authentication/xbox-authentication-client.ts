@@ -6,17 +6,7 @@ import { ExpiryTokenCache } from "../util/expiry-token-cache";
 import { FetchFunction, defaultFetch } from "../util/fetch-function";
 import { RequestError } from "../util/request-error";
 import { unauthorizedRetryPolicy } from "../core/request-policy";
-
-export enum RelyingParty {
-  Xbox = "http://xboxlive.com",
-  Halo = "https://prod.xsts.halowaypoint.com/",
-}
-
-export interface XboxAuthenticationToken {
-  token: string;
-  expiresAt: DateTime;
-  refreshToken: string;
-}
+import { RelyingParty } from "./relying-party";
 
 export class XboxAuthenticationClient {
   static readonly userTokenName = "xbox.userToken";
@@ -53,7 +43,7 @@ export class XboxAuthenticationClient {
         };
         await (
           await this.tokenPersisterOrPromise
-        )?.save("xbox.userToken", token);
+        )?.save(XboxAuthenticationClient.userTokenName, token);
         return token;
       } else {
         throw new RequestError(url, response);
@@ -63,11 +53,12 @@ export class XboxAuthenticationClient {
       const tokenPersister = await this.tokenPersisterOrPromise;
       return (
         (await tokenPersister?.load<XboxTicket & { expiresAt: unknown }>(
-          XboxAuthenticationClient.userTokenName
+          XboxAuthenticationClient.userTokenName,
         )) ?? null
       );
-    }
+    },
   );
+
   private xstsTicketCache = new KeyedExpiryTokenCache(
     async (relyingParty: RelyingParty, userToken: string) => {
       const url = "https://xsts.auth.xboxlive.com/xsts/authorize";
@@ -107,8 +98,8 @@ export class XboxAuthenticationClient {
       (await (
         await this.tokenPersisterOrPromise
       )?.load<XboxTicket & { expiresAt: unknown }>(
-        "xbox.xstsTicket." + relyingParty
-      )) ?? null
+        XboxAuthenticationClient.xstsTicketName(relyingParty),
+      )) ?? null,
   );
 
   constructor(
@@ -116,7 +107,7 @@ export class XboxAuthenticationClient {
     private readonly tokenPersisterOrPromise?:
       | TokenPersister
       | Promise<TokenPersister>,
-    private readonly fetchFn: FetchFunction = defaultFetch
+    private readonly fetchFn: FetchFunction = defaultFetch,
   ) {}
 
   public async getXstsTicket(relyingParty: RelyingParty) {
@@ -129,10 +120,12 @@ export class XboxAuthenticationClient {
             // Clear from memory
             this.userTokenCache.clearToken();
             // Clear from storage
-            await (await this.tokenPersisterOrPromise)?.clear("xbox.userToken");
+            await (
+              await this.tokenPersisterOrPromise
+            )?.clear(XboxAuthenticationClient.userTokenName);
             userToken = null;
           }
-        }
+        },
       );
       xstsTicket = await unauthorizedRetryPolicy
         .execute(async () => {
@@ -154,7 +147,7 @@ export class XboxAuthenticationClient {
     this.xstsTicketCache.clearToken(relyingParty);
     // Clear from storage
     (await this.tokenPersisterOrPromise)?.clear(
-      "xbox.xstsTicket." + relyingParty
+      XboxAuthenticationClient.xstsTicketName(relyingParty),
     );
   };
 
@@ -165,6 +158,8 @@ export class XboxAuthenticationClient {
     // Clear from memory
     this.userTokenCache.clearToken();
     // Clear from storage
-    (await this.tokenPersisterOrPromise)?.clear("xbox.userToken");
+    (await this.tokenPersisterOrPromise)?.clear(
+      XboxAuthenticationClient.userTokenName,
+    );
   };
 }
