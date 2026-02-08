@@ -31,7 +31,7 @@ import { DateTime } from "luxon";
 import { wrapPlayerId, unwrapPlayerId } from "../util/xuid";
 import { SeasonCalendarContainer } from "../models/halo-infinite/season";
 import { Settings } from "../models/halo-infinite/settings";
-import { MatchCount } from "src/models/halo-infinite/match-count";
+import { MatchCount } from "../models/halo-infinite/match-count";
 import { BanMessage } from "../models/halo-infinite/ban-message";
 
 export interface ResultContainer<TValue> {
@@ -81,10 +81,10 @@ export class HaloInfiniteClient {
         `https://${HaloCoreEndpoints.SettingsOrigin}.${
           HaloCoreEndpoints.ServiceDomain
         }/oban/flight-configurations/titles/hi/audiences/retail/players/${wrapPlayerId(
-          xuid
+          xuid,
         )}/active`,
         { method: "get" },
-        false
+        false,
       );
       const {
         FlightConfigurationId,
@@ -99,25 +99,25 @@ export class HaloInfiniteClient {
           : DateTime.now().plus({ seconds: 5 }),
       };
     },
-    async (spartanToken) => this.clearanceMap.get(spartanToken) ?? null
+    async (spartanToken) => this.clearanceMap.get(spartanToken) ?? null,
   );
 
   constructor(
     private readonly spartanTokenProvider: SpartanTokenProvider,
-    private readonly fetchFn: FetchFunction = defaultFetch
+    private readonly fetchFn: FetchFunction = defaultFetch,
   ) {}
 
   protected async executeRequest(
     url: string,
     init: RequestInit,
-    skipAuth: boolean
+    skipAuth: boolean,
   ) {
     const failureHandler = unauthorizedRetryPolicy.onFailure(
       async ({ handled }) => {
         if (handled) {
           await this.spartanTokenProvider.clearSpartanToken();
         }
-      }
+      },
     );
     try {
       return await unauthorizedRetryPolicy.execute(async () => {
@@ -131,7 +131,7 @@ export class HaloInfiniteClient {
         if (!skipAuth) {
           headers.set(
             "x-343-authorization-spartan",
-            await this.spartanTokenProvider.getSpartanToken()
+            await this.spartanTokenProvider.getSpartanToken(),
           );
         }
 
@@ -154,7 +154,7 @@ export class HaloInfiniteClient {
   protected async executeJsonRequest<T>(
     url: string,
     init: RequestInit,
-    skipAuth?: boolean
+    skipAuth?: boolean,
   ) {
     const response = await this.executeRequest(url, init, skipAuth ?? false);
 
@@ -171,7 +171,7 @@ export class HaloInfiniteClient {
     let resultsContainer: ResultsContainer<T>;
     try {
       resultsContainer = await this.executeJsonRequest<ResultsContainer<T>>(
-        ...args
+        ...args,
       );
     } catch (e) {
       if (e instanceof RequestError && e.response.status === 404) {
@@ -200,7 +200,7 @@ export class HaloInfiniteClient {
         count: count.toString(),
         start: start.toString(),
       })}`,
-      ...rest
+      ...rest,
     );
 
     return result.Results;
@@ -214,7 +214,7 @@ export class HaloInfiniteClient {
     playlistId: string,
     playerIds: string[],
     seasonId?: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) => {
     const urlParams = new URLSearchParams({
       players: playerIds.map(wrapPlayerId).join(","),
@@ -227,7 +227,7 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
   };
 
@@ -236,7 +236,7 @@ export class HaloInfiniteClient {
    */
   public getUser = (
     gamerTag: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     this.executeJsonRequest<UserInfo>(
       `https://${HaloCoreEndpoints.Profile}.${HaloCoreEndpoints.ServiceDomain}/users/gt(${gamerTag})`,
@@ -244,7 +244,7 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   /** Get gamertag info for several players.
@@ -252,7 +252,7 @@ export class HaloInfiniteClient {
    */
   public getUsers = (
     xuids: string[],
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) => {
     return this.executeJsonRequest<UserInfo[]>(
       `https://${HaloCoreEndpoints.Profile}.${
@@ -261,7 +261,7 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
   };
 
@@ -271,18 +271,18 @@ export class HaloInfiniteClient {
   public getUserServiceRecord = (
     gamerTagOrWrappedXuid: string,
     queryParameters?: { seasonId?: string; playlistAssetId?: string },
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     this.executeJsonRequest<ServiceRecord>(
       `https://${HaloCoreEndpoints.StatsOrigin}.${
         HaloCoreEndpoints.ServiceDomain
       }/hi/players/${gamerTagOrWrappedXuid}/Matchmade/servicerecord?${new URLSearchParams(
-        queryParameters
+        queryParameters,
       ).toString()}`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   /** Get playlist information
@@ -290,10 +290,10 @@ export class HaloInfiniteClient {
    */
   public getPlaylist = async (
     playlistId: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) => {
     const clearanceToken = await this.clearanceCache.getToken(
-      await this.spartanTokenProvider.getSpartanToken()
+      await this.spartanTokenProvider.getSpartanToken(),
     );
     return this.executeJsonRequest<Playlist>(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/multiplayer/file/playlists/assets/${playlistId}.json`,
@@ -304,7 +304,7 @@ export class HaloInfiniteClient {
           ...init?.headers,
           "343-clearance": clearanceToken.FlightConfigurationId,
         },
-      }
+      },
     );
   };
 
@@ -313,7 +313,7 @@ export class HaloInfiniteClient {
     type: MatchType = MatchType.All,
     count: number = 25,
     start: number = 0,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) => {
     let params: Record<string, string> = {};
     if (type !== MatchType.All) {
@@ -329,13 +329,13 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
   };
 
   public getPlayerMatchCount = (
     playerXuid: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     this.executeJsonRequest<MatchCount>(
       `https://${HaloCoreEndpoints.StatsOrigin}.${
@@ -344,25 +344,25 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getMatchStats = (
     matchId: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     this.executeJsonRequest<MatchStats>(
       `https://${HaloCoreEndpoints.StatsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/matches/${matchId}/stats`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getMatchSkill = async (
     matchId: string,
     playerIds: string[],
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     await this.executeResultsRequest<MatchSkill>(
       `https://${HaloCoreEndpoints.SkillOrigin}.${
@@ -373,21 +373,21 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   /** Gets authoring metadata about a specific asset. */
   public getAsset = <TAssetType extends keyof AssetKindTypeMap>(
     assetType: TAssetType,
     assetId: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     this.executeJsonRequest<AssetKindTypeMap[TAssetType]>(
       `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/${assetKindUrlMap[assetType]}/${assetId}`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   /** Gets metadata related to a concrete version of a specified asset. */
@@ -395,7 +395,7 @@ export class HaloInfiniteClient {
     assetType: TAssetType,
     assetId: string,
     versionId: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ) =>
     this.executeJsonRequest<AssetKindTypeMap[TAssetType]>(
       `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/${assetKindUrlMap[assetType]}/${assetId}/versions/${versionId}`,
@@ -405,24 +405,24 @@ export class HaloInfiniteClient {
           Origin: "https://www.halowaypoint.com",
         },
         method: "get",
-      }
+      },
     );
 
   // Don't be fooled, the "profile" version of this endpoint is worthless
   public getCurrentUser = (
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<{ xuid: string; notificationsReadDate: string }> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.CommsOrigin}.${HaloCoreEndpoints.ServiceDomain}/users/me`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getMatchesPrivacy = (
     playerXuid: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<MatchesPrivacy> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.StatsOrigin}.${
@@ -431,13 +431,13 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public updateMatchesPrivacy = (
     playerXuid: string,
     matchesPrivacy: MatchesPrivacy,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<MatchesPrivacy> => {
     const headers = new Headers(init?.headers);
     headers.set("Content-Type", "application/json");
@@ -450,36 +450,36 @@ export class HaloInfiniteClient {
         method: "put",
         headers,
         body: JSON.stringify({ matchesPrivacy }),
-      }
+      },
     );
   };
 
   public getProgressionFile = <TFileType extends ProgressionFileType>(
     filename: `${TFileType}/${string}.json`,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<ProgressionFileTypeMap[TFileType]> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/Progression/file/${filename}`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getMedalsMetadataFile = (
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<MedalsMetadataFile> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/Waypoint/file/medals/metadata.json`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getBanSummary = (
     xuids: string[],
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<BanSummary> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.BanProcessorOrigin}.${
@@ -488,35 +488,35 @@ export class HaloInfiniteClient {
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getBanMessage(
     banPath: string,
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<BanMessage> {
     return this.executeJsonRequest(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/banning/file/${banPath}`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
   }
 
   public getSeasonCalendar = (
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<SeasonCalendarContainer> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/progression/file/calendars/seasons/seasoncalendar.json`,
       {
         ...init,
         method: "get",
-      }
+      },
     );
 
   public getSettings = (
-    init?: Omit<RequestInit, "body" | "method">
+    init?: Omit<RequestInit, "body" | "method">,
   ): Promise<Settings> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.SettingsOrigin}.${HaloCoreEndpoints.ServiceDomain}/settings/hipc/e2a0a7c6-6efe-42af-9283-c2ab73250c48`,
@@ -524,6 +524,6 @@ export class HaloInfiniteClient {
         ...init,
         method: "get",
       },
-      true
+      true,
     );
 }
