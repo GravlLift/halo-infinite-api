@@ -35,7 +35,7 @@ export interface Asset {
   InspectionResult: number;
   CloneBehavior: number;
   Order: number;
-  PublishedDate: ApiFormattedDate;
+  PublishedDate: ApiFormattedDate | null;
   VersionNumber: number;
   Admin: string;
 }
