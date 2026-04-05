@@ -33,6 +33,7 @@ import { SeasonCalendarContainer } from "../models/halo-infinite/season";
 import { Settings } from "../models/halo-infinite/settings";
 import { MatchCount } from "../models/halo-infinite/match-count";
 import { BanMessage } from "../models/halo-infinite/ban-message";
+import { CsrSeasonCalendarContainer } from "../models/halo-infinite/csr-season";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -509,6 +510,17 @@ export class HaloInfiniteClient {
   ): Promise<SeasonCalendarContainer> =>
     this.executeJsonRequest(
       `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/progression/file/calendars/seasons/seasoncalendar.json`,
+      {
+        ...init,
+        method: "get",
+      },
+    );
+
+  public getCsrSeasonCalendar = (
+    init?: Omit<RequestInit, "body" | "method">,
+  ): Promise<CsrSeasonCalendarContainer> =>
+    this.executeJsonRequest(
+      `https://${HaloCoreEndpoints.GameCmsOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/Progression/file/Csr/Calendars/CsrSeasonCalendar.json`,
       {
         ...init,
         method: "get",
