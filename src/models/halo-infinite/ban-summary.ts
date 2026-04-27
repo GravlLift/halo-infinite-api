@@ -1,4 +1,4 @@
-import { ResultContainer } from "src";
+import { ResultContainer } from "../../core/halo-infinite-client";
 import { ApiFormattedDate } from "./api-formatted-date";
 
 export enum BanType {
