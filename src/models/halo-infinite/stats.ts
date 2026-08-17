@@ -126,6 +126,10 @@ type StatsMap = {
     ZonesStats: ZonesStats;
     PvpStats: PvpStats;
   };
+  [GameVariantCategory.MultiplayerTotalControl]: {
+    ZonesStats: ZonesStats;
+    PvpStats: PvpStats;
+  },
   [GameVariantCategory.MultiplayerExtraction]: {
     ExtractionStats: ExtractionStats;
     PvpStats: PvpStats;
