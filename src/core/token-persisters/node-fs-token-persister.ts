@@ -4,11 +4,18 @@ function escapeTokenNameForFilesystem(tokenName: string): string {
   return tokenName.replace(/[^a-zA-Z0-9-_]/g, "_");
 }
 
+async function getTokenDir(): Promise<string> {
+  if (process.env.TOKEN_ROOT) {
+    return process.env.TOKEN_ROOT;
+  }
+  const { join } = await import("path");
+  const { homedir } = await import("os");
+  return join(homedir(), ".halo-infinite", "tokens");
+}
+
 export const nodeFsTokenPersister: TokenPersister = {
   load: async (tokenName) => {
-    const tokenDir =
-      process.env.TOKEN_ROOT ||
-      (await import("path")).join(import.meta.dirname, "./tokens");
+    const tokenDir = await getTokenDir();
     try {
       const json = await (
         await import("fs/promises")
@@ -25,9 +32,7 @@ export const nodeFsTokenPersister: TokenPersister = {
     }
   },
   save: async (tokenName, token) => {
-    const tokenDir =
-      process.env.TOKEN_ROOT ||
-      (await import("path")).join(import.meta.dirname, "./tokens");
+    const tokenDir = await getTokenDir();
     await (await import("fs/promises")).mkdir(tokenDir, { recursive: true });
     await (
       await import("fs/promises")
@@ -37,9 +42,7 @@ export const nodeFsTokenPersister: TokenPersister = {
     );
   },
   clear: async (tokenName) => {
-    const tokenDir =
-      process.env.TOKEN_ROOT ||
-      (await import("path")).join(import.meta.dirname, "./tokens");
+    const tokenDir = await getTokenDir();
     await (
       await import("fs/promises")
     ).unlink(`${tokenDir}/${escapeTokenNameForFilesystem(tokenName)}`);
