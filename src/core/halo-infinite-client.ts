@@ -34,6 +34,7 @@ import { Settings } from "../models/halo-infinite/settings";
 import { MatchCount } from "../models/halo-infinite/match-count";
 import { BanMessage } from "../models/halo-infinite/ban-message";
 import { CsrSeasonCalendarContainer } from "../models/halo-infinite/csr-season";
+import { Film } from "../models/halo-infinite/film";
 
 export interface ResultContainer<TValue> {
   Id: string;
@@ -538,4 +539,42 @@ export class HaloInfiniteClient {
       },
       true,
     );
+
+  public spectateMatch(
+    matchId: string,
+    init?: Omit<RequestInit, "body" | "method">,
+  ): Promise<Film> {
+    return this.executeJsonRequest(
+      `https://${HaloCoreEndpoints.DiscoveryOrigin}.${HaloCoreEndpoints.ServiceDomain}/hi/films/matches/${matchId}/spectate`,
+      {
+        ...init,
+        method: "get",
+      },
+    );
+  }
+
+  public async getFilmChunk(
+    blobStoragePathPrefix: string,
+    filmIndex: number,
+    init?: Omit<RequestInit, "body" | "method">,
+  ): Promise<ArrayBuffer> {
+    const response = await this.executeRequest(
+      `${blobStoragePathPrefix}filmChunk${filmIndex}`,
+      {
+        ...init,
+        method: "get",
+      },
+      false,
+    );
+
+    if (response.status >= 200 && response.status < 300) {
+      // Response is an octet-stream (binary data)
+      return response.arrayBuffer();
+    } else {
+      throw new RequestError(
+        `${blobStoragePathPrefix}filmChunk${filmIndex}`,
+        response,
+      );
+    }
+  }
 }
