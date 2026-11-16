@@ -555,11 +555,11 @@ export class HaloInfiniteClient {
 
   public async getFilmChunk(
     blobStoragePathPrefix: string,
-    filmIndex: number,
+    fileRelativePath: string,
     init?: Omit<RequestInit, "body" | "method">,
   ): Promise<ArrayBuffer> {
     const response = await this.executeRequest(
-      `${blobStoragePathPrefix}filmChunk${filmIndex}`,
+      `${blobStoragePathPrefix}${fileRelativePath}`,
       {
         ...init,
         method: "get",
@@ -572,7 +572,7 @@ export class HaloInfiniteClient {
       return response.arrayBuffer();
     } else {
       throw new RequestError(
-        `${blobStoragePathPrefix}filmChunk${filmIndex}`,
+        `${blobStoragePathPrefix}${fileRelativePath}`,
         response,
       );
     }
